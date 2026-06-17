@@ -35,13 +35,17 @@ std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detection
             else {
                 out[j].exists = true;
 
-                for (int corner = 0; corner < 4; corner ++) {
+                for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function
                     Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1].inverse() * obj_point_choices[corner];
                     cv::point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
-                    out[j].obj_points.append(obj_point);
-                    out[j].img_points.append(); // <------------------- ToDo
+                    
+                    cv::point2f im_point = {det->p[corner][0], det->p[corner][1]}
+
+                    out[j].obj_points.pushback(obj_point);
+                    out[j].img_points.pushback(im_point);
                 }
             }
         }
     }
 }
+

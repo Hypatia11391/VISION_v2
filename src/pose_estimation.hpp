@@ -1,7 +1,7 @@
 #pragma once
 
 // Standard C++
-#include <vector>
+//#include <vector>
 
 // Libraries
 #include <apriltag/apriltag_pose.h>
