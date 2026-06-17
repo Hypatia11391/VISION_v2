@@ -1,4 +1,9 @@
+compile_commands.json
+
 .venv/
-build/
-opencv/
-eigen3/
+
+build/*
+include/*
+
+!build/.gitkeep
+!include/.gitkeep
