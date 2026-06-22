@@ -40,4 +40,10 @@ namespace Constants {
                         0.0         , 0.0        , 1.0          )
         }
     };
+
+    inline constexpr int iterations = 100; // Number of iterations for the PnP algorithm to run
+    inline constexpr double reprojection_error = 8.0;// reprojectionError (threshold to consider a point an inlier)
+    inline constexpr double req_confidence = 0.99; // Required confidence for the pnp algorithm. Increasing requires more iterations.
+
+    inline constexpr double avg_pixel_error = 1.0; // The average error in image point [pixels]
 }

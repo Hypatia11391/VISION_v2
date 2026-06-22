@@ -1,4 +1,8 @@
 #include "Eigen/Dense"
+#include <apriltag/apriltag_pose.h>
+#include <apriltag/apriltag.h>
+#include <apriltag/tag36h11.h>
+#include <apriltag/common/zarray.h>
 
 #include "pose_estimation.hpp"
 #include "apriltag_locs.hpp"
@@ -35,7 +39,7 @@ std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detection
             else {
                 out[j].exists = true;
 
-                for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function
+                for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function, or transpositiona rather than inversion.
                     Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1].inverse() * obj_point_choices[corner];
                     cv::point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
                     
@@ -47,5 +51,92 @@ std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detection
             }
         }
     }
+
+    return out;
 }
 
+std::pair<Eigen::Matrix4d, std::array<double, 6>> estimate_pose(VS::points points, int id_) {
+    cv::Mat rvec;
+    cv::Mat tvec;
+    cv::Mat inliers;
+
+    bool successfulPnP = cv::solvePnPRansac(points.obj_points,
+                                            points.img_points,
+                                            Constants::cameras[id_].intrinsics,
+                                            Constants::cameras[id_].distortion_constants,
+                                            rvec,
+                                            tvec,
+                                            false, // useExtrinsicGuess <------------ Coulb be true with an estimation of current pose as just the last frame. Try if needed for time optimization.
+                                            Constants::iterations,
+                                            Constants::reprojection_error,
+                                            Constants::req_confidence,
+                                            inliers,
+                                            cv::SOLVEPNP_ITERATIVE
+    );
+
+    // Convert output Rodrigues and tvec to 4x4 transform matrix
+    cv::Mat rotation_matrix;
+    Eigen::Matrix4d pose_estimate;
+
+    // Convert the rotation vector
+    cv::Rodrigues(rvec, rotation_matrix);
+    Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> eigen_rot((double*)rotation_matrix.data);
+    pose_estimate.block<3,3>(0,0) = eigen_rot;
+
+    // Convert the translation vector
+    pose_estimate.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
+
+}
+
+std::array<double, 6> get_stds(VS::points inliers, cv::Mat rvec, cv::Mat tvec){
+    std::vector<cv::Point2f> reprojected_points;
+    cv::Mat Jacobian;
+    Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts;
+
+    Eigen::Matrix<double, num_inliers, 6> standard_divs_out;
+    
+    int num_inliers = inliers.img_points.size();
+
+    cv::projectPoints(inliers.obj_points,
+                      rvec,
+                      tvec,
+                      Constants::cameras[id_].intrinsics,
+                      Constants::cameras[id_].distortion_constants,
+                      reprojected_points,
+                      Jacobian
+    );
+
+    std::vector<cv::Point2f> delta_im_pts_cv = reprojected_points - inliers.img_points;
+
+    for (int point = 0; point < num_inliers, point++) {
+        delta_im_pts[2*point] = delta_im_pts_cv[point][0] // <------------ ToDo: Check cv:poimt indexing.
+        delta_im_pts[2*point + 1] = delta_im_pts_cv[point][1]
+    }
+
+    // take the inverse of the jacobian, then multiply by delta im points to get delta pose.
+    
+}
+
+void run() {
+    VS::Image frame;
+    apriltag_detector_t *td_;
+    cv::Mat& frame_data;
+
+
+    while (true) {
+        frame_queue.pop(frame);
+
+        cv::Mat& frame_data = frame.frame&
+
+        image_u8_t im{ // <------------------- can I optimize this by using pointers instead or something for image data?
+            .width = frame_data.cols,
+            .height = frame_data.rows,
+            .stride = (int)frame_data.step, 
+            .buf = frame_data.data
+        };
+
+        zarray_t *detections = apriltag_detector_detect(td_, im);
+
+        std::array<VS::points, Constants::num_ref_frames> points = get_points(detections);
+    };
+}
