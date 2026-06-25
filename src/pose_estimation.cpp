@@ -55,7 +55,7 @@ std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detection
     return out;
 }
 
-std::pair<Eigen::Matrix4d, std::array<double, 6>> estimate_pose(VS::points points, int id_) {
+std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(VS::points points, int id_) {
     cv::Mat rvec;
     cv::Mat tvec;
     cv::Mat inliers;
@@ -86,12 +86,19 @@ std::pair<Eigen::Matrix4d, std::array<double, 6>> estimate_pose(VS::points point
     // Convert the translation vector
     pose_estimate.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
 
+    // Get pose standard deviations
+    Eigen::Matrix<double, 6, 1> sigmas = get_stds(inliers, rvec, tvec);
+
+    std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> output_pose_with_uncertainty = {pose_estimate, sigmas};
+
+    return output_pose_with_uncertainty;
+
 }
 
-std::array<double, 6> get_stds(VS::points inliers, cv::Mat rvec, cv::Mat tvec){
+Eigen::Matrix<double, 6, 1> get_stds(VS::points inliers, cv::Mat rvec, cv::Mat tvec){
     std::vector<cv::Point2f> reprojected_points;
-    cv::Mat Jacobian;
-    Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts;
+    cv::Mat jacobian;
+    Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts; // <---------------------------- Wrong shape? Transpose?
 
     Eigen::Matrix<double, num_inliers, 6> standard_divs_out;
     
@@ -103,18 +110,24 @@ std::array<double, 6> get_stds(VS::points inliers, cv::Mat rvec, cv::Mat tvec){
                       Constants::cameras[id_].intrinsics,
                       Constants::cameras[id_].distortion_constants,
                       reprojected_points,
-                      Jacobian
+                      jacobian
     );
 
     std::vector<cv::Point2f> delta_im_pts_cv = reprojected_points - inliers.img_points;
 
     for (int point = 0; point < num_inliers, point++) {
-        delta_im_pts[2*point] = delta_im_pts_cv[point][0] // <------------ ToDo: Check cv:poimt indexing.
-        delta_im_pts[2*point + 1] = delta_im_pts_cv[point][1]
+        delta_im_pts(2*point, 0) = delta_im_pts_cv[point][0] // <------------ ToDo: Check cv:poimt indexing.
+        delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point][1]
     }
 
+    Eigen::MatrixXd eigen_jacobian;
+    cv::cv2eigen(jacobian, eigen_jacobian);
+
     // take the inverse of the jacobian, then multiply by delta im points to get delta pose.
-    
+    Eigen::Matrix<double, 6, 2*num_inliers> J_inv= VS::jacobian_psuedo_inverse(*eigen_jacobian)
+    Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
+
+    return delta_pose;
 }
 
 void run() {

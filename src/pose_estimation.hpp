@@ -30,10 +30,10 @@ private:
     std::array<points, Constants::num_ref_frames> get_points(zarray_t *detections);
 
     // Takes in a points object, and outputs a pose transform and covariance matrix
-    std::pair<Eigen::Matrix4d, std::array<double, 6>> estimate_pose(points points);
+    std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(points points);
 
     // Takes in a set of inliers and outputs the covariance matrix
-    std::array<double, 6> get_covariance(points inliers);// Extra function, compute covariance.
+    Eigen::Matrix<double, 6, 1> get_stds(points inliers, cv::Mat rvec, cv::Mat tvec);// Extra function, compute covariance.
 
 
 public:
