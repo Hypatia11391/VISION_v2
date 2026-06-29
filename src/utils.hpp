@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.hpp"
+#include <Eigen/src/Core/Matrix.h>
 #include <chrono>
 #include <string>
 #include <iostream>
@@ -16,10 +17,10 @@
 namespace  VS {
 
 struct points{
-    bool exists;
-    std::vector<cv::point3f> obj_points;
-    std::vector<cv::point2f> img_points;
-}
+    int set_id;
+    std::vector<cv::point3f> *obj_points;
+    std::vector<cv::point2f> *img_points;
+};
 
 struct CameraInfo {
     int cam_res_width;
@@ -27,7 +28,7 @@ struct CameraInfo {
     int cam_FPS;
     std::vector<double> distortion_constants;
     cv::Matx33d intrinsics;
-}
+};
 
 struct Image {
     cv::Mat frame;
@@ -37,18 +38,18 @@ struct Image {
 };
 
 struct CameraPose {
+    int apriltag_set_number;
     Eigen::Matrix4d pose;
-    double translation_err;
-    double rotation_err;
+    Eigen::Matrix<double, 6, 1> uncertainty;
 };
 
 struct CameraPoseSet {
     int camera_id;
     std::vector<CameraPose> camera_poses;
     double timestamp;
-}
+};
 
-Eigen::MatrixXd jacobian_psuedo_inverse(const Eigen::MatrixXd &J, double lambda = 0.001) {
+inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double lambda = 0.001) {
     int rows = J.rows();
     int cols = J.cols();
     
@@ -63,6 +64,21 @@ Eigen::MatrixXd jacobian_psuedo_inverse(const Eigen::MatrixXd &J, double lambda 
         Eigen::MatrixXd I = Eigen::MatrixXd::Identity(cols, cols);
         return (JtJ + lambda * lambda * I).inverse() * J.transpose();
     }
+}
+
+inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
+    cv::Mat rotation_matrix;
+    Eigen::Matrix4d T_out;
+
+    // Convert the rotation vector
+    cv::Rodrigues(rvec, rotation_matrix);
+    Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> eigen_rot((double*)rotation_matrix.data);
+    T_out.block<3,3>(0,0) = eigen_rot;
+
+    // Convert the translation vector
+    T_out.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
+
+    return T_out;
 }
 
 template <typename T>

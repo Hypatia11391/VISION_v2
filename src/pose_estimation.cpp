@@ -14,40 +14,31 @@
 VS::PoseEstimator::PoseEstimator(int id, VS::ThreadSafeQueue<Image>& input_queue, VS::ThreadSafeQueue<CameraPoseSet>& output_queue)
     : cam_id(id), frame_queue(input_queue), output_pose_queue(output_queue) {}
 
-std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detections){
+VS::points get_points(zarray_t *detections, int set_id){
     std::array<Eigen::Vector4d, 4> obj_point_choices;
-    obj_point_choices[0] = Eigen::Vector3d(-Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
-    obj_point_choices[1] = Eigen::Vector3d(Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
-    obj_point_choices[2] = Eigen::Vector3d(Constants::tag_size/2, -Constants::tag_size/2, 0.0, 1.0);
-    obj_point_choices[3] = Eigen::Vector3d(-Constants::tag_size/2, -Constants::tag_size/2, 0.0, 1.0);
+    obj_point_choices[0] = Eigen::Vector4d(-Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
+    obj_point_choices[1] = Eigen::Vector4d(Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
+    obj_point_choices[2] = Eigen::Vector4d(Constants::tag_size/2, -Constants::tag_size/2, 0.0, 1.0);
+    obj_point_choices[3] = Eigen::Vector4d(-Constants::tag_size/2, -Constants::tag_size/2, 0.0, 1.0);
 
-    std::array<VS::points, Constants::num_ref_frames> out;
+    VS::points out;
+    out.set_id = set_id;
 
     // For each detection
     for (int i = 0; i < zarray_size(detections); i++) {
         apriltag_detection_t *det;
         zarray_get(detections, i, &det);
 
-        // For each set of apriltags
-        for (int j = 0; j < Constants::num_ref_frames; j++) {
+        // Check if the detection is in the set
+        if (std::binary_search(Constants::apriltag_ids_for_each_frame[set_id].begin(), Constants::apriltag_ids_for_each_frame[set_id].end(), det->id)) {
+            for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function, or transpositiona rather than inversion.
+                Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1].inverse() * obj_point_choices[corner];
+                
+                cv::point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
+                cv::point2f im_point = {det->p[corner][0], det->p[corner][1]};
 
-            // Check if the detection is is in the set
-            if (!std::binary_search(Constants::apriltag_ids_for_each_frame[j].begin(), Constants::apriltag_ids_for_each_frame[j].end(), det->id)) {
-                out[j].exists = false;
-            }
-            
-            else {
-                out[j].exists = true;
-
-                for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function, or transpositiona rather than inversion.
-                    Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1].inverse() * obj_point_choices[corner];
-                    cv::point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
-                    
-                    cv::point2f im_point = {det->p[corner][0], det->p[corner][1]}
-
-                    out[j].obj_points.pushback(obj_point);
-                    out[j].img_points.pushback(im_point);
-                }
+                out.obj_points->pushback(obj_point);
+                out.img_points->pushback(im_point);
             }
         }
     }
@@ -55,15 +46,17 @@ std::array<VS::points, Constants::num_ref_frames> get_points(zarray_t *detection
     return out;
 }
 
-std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(VS::points points, int id_) {
+VS::CameraPose estimate_pose(VS::points points, int cam_id) {
+    VS::CameraPose out;
+
     cv::Mat rvec;
     cv::Mat tvec;
     cv::Mat inliers;
 
-    bool successfulPnP = cv::solvePnPRansac(points.obj_points,
-                                            points.img_points,
-                                            Constants::cameras[id_].intrinsics,
-                                            Constants::cameras[id_].distortion_constants,
+    bool successfulPnP = cv::solvePnPRansac(*points.obj_points,
+                                            *points.img_points,
+                                            Constants::cameras[cam_id].intrinsics,
+                                            Constants::cameras[cam_id].distortion_constants,
                                             rvec,
                                             tvec,
                                             false, // useExtrinsicGuess <------------ Coulb be true with an estimation of current pose as just the last frame. Try if needed for time optimization.
@@ -75,27 +68,21 @@ std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(VS::points
     );
 
     // Convert output Rodrigues and tvec to 4x4 transform matrix
-    cv::Mat rotation_matrix;
-    Eigen::Matrix4d pose_estimate;
-
-    // Convert the rotation vector
-    cv::Rodrigues(rvec, rotation_matrix);
-    Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> eigen_rot((double*)rotation_matrix.data);
-    pose_estimate.block<3,3>(0,0) = eigen_rot;
-
-    // Convert the translation vector
-    pose_estimate.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
+    out.pose = VS::getTransform(rvec, tvec);
 
     // Get pose standard deviations
-    Eigen::Matrix<double, 6, 1> sigmas = get_stds(inliers, rvec, tvec);
+    out.uncertainty = get_stds(inliers, rvec, tvec);
 
-    std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> output_pose_with_uncertainty = {pose_estimate, sigmas};
-
-    return output_pose_with_uncertainty;
+    return out;
 
 }
 
-Eigen::Matrix<double, 6, 1> get_stds(VS::points inliers, cv::Mat rvec, cv::Mat tvec){
+Eigen::Matrix<double, 6, 1> get_stds(cv::Mat inliers, cv::Mat rvec, cv::Mat tvec){ // <---------------- ToDo fix major errors.
+    int num_inliers = inliers.rows;
+
+    VS::points inlier_points;
+    inlier_points.img_points
+
     std::vector<cv::Point2f> reprojected_points;
     cv::Mat jacobian;
     Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts; // <---------------------------- Wrong shape? Transpose?
@@ -151,5 +138,21 @@ void run() {
         zarray_t *detections = apriltag_detector_detect(td_, im);
 
         std::array<VS::points, Constants::num_ref_frames> points = get_points(detections);
+
+        VS::CameraPoseSet current_pose;
+
+        for (int i = 0; i < Constants::num_ref_frames, i++) {
+            VS::CameraPose pose_in_current_set;
+
+            std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> pose_and_uncertainty = estimate_pose(points[i], id);
+
+            pose_in_current_set.pose = pose_and_uncertainty.first;
+            pose_in_current_set.uncertainty = pose_and_uncertainty.second;
+            pose_in_current_set.apriltag_set_number = i;
+
+            current_pose.pushback(pose_in_current_set);
+        }
+
+        output_pose_queue.push(current_pose);
     };
 }
