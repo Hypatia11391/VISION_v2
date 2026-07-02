@@ -27,7 +27,7 @@ private:
 
     // Returns objectpoints and image points in the form of an array of len 2. Obj and Img pointst are each a vector one element
     // for each relevant ref frame, and the image and opject points are contained as a vector of points in each of these.
-    std::array<points, Constants::num_ref_frames> get_points(zarray_t *detections);
+    VS::points get_points(zarray_t *detections, int set_id);
 
     // Takes in a points object, and outputs a pose transform and covariance matrix
     std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(points points);

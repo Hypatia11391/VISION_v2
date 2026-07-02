@@ -49,8 +49,8 @@ struct CameraPoseSet {
     double timestamp;
 };
 
-inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double lambda = 0.001) {
-    int rows = J.rows();
+inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double lambda = 0.001) { // <--------- This is AI generated. Use at your own risk.
+    int rows = J.rows(); // <------------ syntax error J is pointer.
     int cols = J.cols();
     
     if (rows <= cols) {

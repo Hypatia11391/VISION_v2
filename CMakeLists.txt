@@ -11,9 +11,17 @@ find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
-add_executable(vision_system)
+add_executable(
+    VisionSystem
+    src/main.cpp
+    src/network.cpp
+    src/pose_estimation.cpp
+    src/video_stream.cpp
+)
 
-target_sources(vision_system PRIVATE
+target_link_libraries(VisionSystem PRIVATE OpenCV apriltag Eigen3)
+
+target_sources(VisionSystem PRIVATE
     src/main.cpp
     src/network.cpp
     src/pose_estimation.cpp

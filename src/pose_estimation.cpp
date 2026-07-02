@@ -14,7 +14,7 @@
 VS::PoseEstimator::PoseEstimator(int id, VS::ThreadSafeQueue<Image>& input_queue, VS::ThreadSafeQueue<CameraPoseSet>& output_queue)
     : cam_id(id), frame_queue(input_queue), output_pose_queue(output_queue) {}
 
-VS::points get_points(zarray_t *detections, int set_id){
+VS::points VS::PoseEstimator::get_points(zarray_t *detections, int set_id){
     std::array<Eigen::Vector4d, 4> obj_point_choices;
     obj_point_choices[0] = Eigen::Vector4d(-Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
     obj_point_choices[1] = Eigen::Vector4d(Constants::tag_size/2, Constants::tag_size/2, 0.0, 1.0);
@@ -46,7 +46,54 @@ VS::points get_points(zarray_t *detections, int set_id){
     return out;
 }
 
-VS::CameraPose estimate_pose(VS::points points, int cam_id) {
+Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec){ // <---------------- ToDo fix major errors.
+    const int num_inliers = inliers.rows;
+
+    // Define the inlier points
+    VS::points inlier_points;
+    inlier_points.img_points->reserve(num_inliers);
+    inlier_points.obj_points->reserve(num_inliers);
+
+    for (int inlier = 0; inlier < num_inliers; inlier ++) {
+        int inlier_idx = inliers.at<float>(inlier, 0);
+
+        (*inlier_points.img_points)[inlier] = (*actual_points.img_points)[inlier_idx];
+        (*inlier_points.obj_points)[inlier] = (*actual_points.obj_points)[inlier_idx];
+    }
+
+    std::vector<cv::Point2f> reprojected_points;
+    cv::Mat jacobian;
+
+    Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts; // <---------------------------- Wrong shape? Transpose?
+    Eigen::Matrix<double, num_inliers, 6> standard_divs;
+
+    cv::projectPoints(*inliers.obj_points,
+                      rvec,
+                      tvec,
+                      Constants::cameras[cam_id].intrinsics,
+                      Constants::cameras[cam_id].distortion_constants,
+                      reprojected_points,
+                      jacobian
+    );
+
+    std::vector<cv::Point2f> delta_im_pts_cv = reprojected_points - (*inliers.img_points);
+
+    for (int point = 0; point < num_inliers; point++) {
+        delta_im_pts(2*point, 0) = delta_im_pts_cv[point][0];
+        delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point][1];
+    }
+
+    Eigen::MatrixXd eigen_jacobian;
+    cv::cv2eigen(jacobian, eigen_jacobian);
+
+    // take the inverse of the jacobian, then multiply by delta im points to get delta pose.
+    Eigen::Matrix<double, 6, 2*num_inliers> J_inv = VS::jacobianPsuedoInverse(eigen_jacobian);
+    Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
+
+    return delta_pose;
+}
+
+VS::CameraPose VS::PoseEstimator::estimate_pose(VS::points points) {
     VS::CameraPose out;
 
     cv::Mat rvec;
@@ -71,53 +118,13 @@ VS::CameraPose estimate_pose(VS::points points, int cam_id) {
     out.pose = VS::getTransform(rvec, tvec);
 
     // Get pose standard deviations
-    out.uncertainty = get_stds(inliers, rvec, tvec);
+    out.uncertainty = get_stds(points, inliers, rvec, tvec);
 
     return out;
 
 }
 
-Eigen::Matrix<double, 6, 1> get_stds(cv::Mat inliers, cv::Mat rvec, cv::Mat tvec){ // <---------------- ToDo fix major errors.
-    int num_inliers = inliers.rows;
-
-    VS::points inlier_points;
-    inlier_points.img_points
-
-    std::vector<cv::Point2f> reprojected_points;
-    cv::Mat jacobian;
-    Eigen::Matrix<double, 2*num_inliers, 1> delta_im_pts; // <---------------------------- Wrong shape? Transpose?
-
-    Eigen::Matrix<double, num_inliers, 6> standard_divs_out;
-    
-    int num_inliers = inliers.img_points.size();
-
-    cv::projectPoints(inliers.obj_points,
-                      rvec,
-                      tvec,
-                      Constants::cameras[id_].intrinsics,
-                      Constants::cameras[id_].distortion_constants,
-                      reprojected_points,
-                      jacobian
-    );
-
-    std::vector<cv::Point2f> delta_im_pts_cv = reprojected_points - inliers.img_points;
-
-    for (int point = 0; point < num_inliers, point++) {
-        delta_im_pts(2*point, 0) = delta_im_pts_cv[point][0] // <------------ ToDo: Check cv:poimt indexing.
-        delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point][1]
-    }
-
-    Eigen::MatrixXd eigen_jacobian;
-    cv::cv2eigen(jacobian, eigen_jacobian);
-
-    // take the inverse of the jacobian, then multiply by delta im points to get delta pose.
-    Eigen::Matrix<double, 6, 2*num_inliers> J_inv= VS::jacobian_psuedo_inverse(*eigen_jacobian)
-    Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
-
-    return delta_pose;
-}
-
-void run() {
+void VS::PoseEstimator::run() {
     VS::Image frame;
     apriltag_detector_t *td_;
     cv::Mat& frame_data;
@@ -128,7 +135,7 @@ void run() {
 
         cv::Mat& frame_data = frame.frame&
 
-        image_u8_t im{ // <------------------- can I optimize this by using pointers instead or something for image data?
+        image_u8_t im{
             .width = frame_data.cols,
             .height = frame_data.rows,
             .stride = (int)frame_data.step, 
@@ -140,17 +147,15 @@ void run() {
         std::array<VS::points, Constants::num_ref_frames> points = get_points(detections);
 
         VS::CameraPoseSet current_pose;
+        current_pose.camera_id = cam_id;
 
         for (int i = 0; i < Constants::num_ref_frames, i++) {
             VS::CameraPose pose_in_current_set;
 
-            std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> pose_and_uncertainty = estimate_pose(points[i], id);
-
-            pose_in_current_set.pose = pose_and_uncertainty.first;
-            pose_in_current_set.uncertainty = pose_and_uncertainty.second;
+            VS::CameraPose pose_and_uncertainty = estimate_pose(points[i], id);
             pose_in_current_set.apriltag_set_number = i;
 
-            current_pose.pushback(pose_in_current_set);
+            current_pose.camera_poses.pushback(pose_in_current_set);
         }
 
         output_pose_queue.push(current_pose);
