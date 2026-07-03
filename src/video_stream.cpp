@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "video_stream.hpp"
 
-VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue, const std::string& device_path)
+VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue, const std::string device_path)
     : cam_id(id), output_queue(queue), device_path(device_path) {}
 
 void VS::VideoStream::video_stream() {
@@ -27,13 +27,12 @@ void VS::VideoStream::video_stream() {
 
     uint64_t frame_count = 0;
     cv::Mat current_frame;
+    double capture_time;
 
     // Continuous capture loop
     while (true) {
-        double capture_time;
-
         if (cap.grab()) {
-            double capture_time = cap.get(cv::CAP_PROP_POS_MSEC);
+            capture_time = cap.get(cv::CAP_PROP_POS_MSEC);
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;

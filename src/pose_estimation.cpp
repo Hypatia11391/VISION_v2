@@ -37,8 +37,8 @@ VS::points VS::PoseEstimator::get_points(zarray_t *detections, int set_id){
                 cv::point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
                 cv::point2f im_point = {det->p[corner][0], det->p[corner][1]};
 
-                out.obj_points->pushback(obj_point);
-                out.img_points->pushback(im_point);
+                out.obj_points.push_back(obj_point);
+                out.img_points.push_back(im_point);
             }
         }
     }
@@ -51,8 +51,8 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::points actual_points
 
     // Define the inlier points
     VS::points inlier_points;
-    inlier_points.img_points->reserve(num_inliers);
-    inlier_points.obj_points->reserve(num_inliers);
+    inlier_points.img_points.reserve(num_inliers);
+    inlier_points.obj_points.reserve(num_inliers);
 
     for (int inlier = 0; inlier < num_inliers; inlier ++) {
         int inlier_idx = inliers.at<float>(inlier, 0);
@@ -132,8 +132,7 @@ void VS::PoseEstimator::run() {
 
     while (true) {
         frame_queue.pop(frame);
-
-        cv::Mat& frame_data = frame.frame&
+        frame_data = frame.frame;
 
         image_u8_t im{
             .width = frame_data.cols,
@@ -149,13 +148,13 @@ void VS::PoseEstimator::run() {
         VS::CameraPoseSet current_pose;
         current_pose.camera_id = cam_id;
 
-        for (int i = 0; i < Constants::num_ref_frames, i++) {
+        for (int i = 0; i < Constants::num_ref_frames; i++) {
             VS::CameraPose pose_in_current_set;
 
             VS::CameraPose pose_and_uncertainty = estimate_pose(points[i], id);
             pose_in_current_set.apriltag_set_number = i;
 
-            current_pose.camera_poses.pushback(pose_in_current_set);
+            current_pose.camera_poses.push_back(pose_in_current_set);
         }
 
         output_pose_queue.push(current_pose);

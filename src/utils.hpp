@@ -18,8 +18,8 @@ namespace  VS {
 
 struct points{
     int set_id;
-    std::vector<cv::point3f> *obj_points;
-    std::vector<cv::point2f> *img_points;
+    std::vector<cv::Point3f> obj_points;
+    std::vector<cv::Point2f> img_points;
 };
 
 struct CameraInfo {
@@ -50,7 +50,7 @@ struct CameraPoseSet {
 };
 
 inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double lambda = 0.001) { // <--------- This is AI generated. Use at your own risk.
-    int rows = J.rows(); // <------------ syntax error J is pointer.
+    int rows = J.rows(); // <------------ syntax error: J is pointer?
     int cols = J.cols();
     
     if (rows <= cols) {
