@@ -19,15 +19,14 @@ add_executable(
     src/video_stream.cpp
 )
 
-target_link_libraries(VisionSystem PRIVATE OpenCV apriltag Eigen3)
-
-target_sources(VisionSystem PRIVATE
-    src/main.cpp
-    src/network.cpp
-    src/pose_estimation.cpp
-    src/video_stream.cpp
+target_link_libraries(VisionSystem PRIVATE 
+    ${OpenCV_LIBS} 
+    apriltag 
+    Eigen3::Eigen
 )
 
-target_include_directories(vision_system PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_sources(VisionSystem PRIVATE)
+
+target_include_directories(VisionSystem PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )

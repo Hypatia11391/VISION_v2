@@ -20,21 +20,19 @@
 namespace VS {
 class PoseEstimator {
 private:
+    // Local variables
     int cam_id;
-
     VS::ThreadSafeQueue<Image>& frame_queue;
     VS::ThreadSafeQueue<CameraPoseSet>& output_pose_queue;
 
-    // Returns objectpoints and image points in the form of an array of len 2. Obj and Img pointst are each a vector one element
-    // for each relevant ref frame, and the image and opject points are contained as a vector of points in each of these.
-    VS::points get_points(zarray_t *detections, int set_id);
+    // Returns the object and imag points of the detections in the image, that are in the apritag set defined by Constants::apriltag_ids_for_each_frame[set_id].
+    std::vector<VS::Points> get_points(zarray_t *detections);
+
+    // Finds the uncertainty of the estimated pose. Outputs the 6 DOF standard deviations.
+    Eigen::Matrix<double, 6, 1> get_stds(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec);// Extra function, compute covariance.
 
     // Takes in a points object, and outputs a pose transform and covariance matrix
-    std::pair<Eigen::Matrix4d, Eigen::Matrix<double, 6, 1>> estimate_pose(points points);
-
-    // Takes in a set of inliers and outputs the covariance matrix
-    Eigen::Matrix<double, 6, 1> get_stds(points inliers, cv::Mat rvec, cv::Mat tvec);// Extra function, compute covariance.
-
+    VS::CameraPoseSet estimate_pose(std::vector<VS::Points> points);
 
 public:
     void run(); // Creates the thread to process detections and runs private functions to produce poses. Writes poses to buffer

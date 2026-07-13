@@ -16,7 +16,7 @@
 
 namespace  VS {
 
-struct points{
+struct Points{
     int set_id;
     std::vector<cv::Point3f> obj_points;
     std::vector<cv::Point2f> img_points;
