@@ -38,7 +38,5 @@ public:
     void run(); // Creates the thread to process detections and runs private functions to produce poses. Writes poses to buffer
 
     PoseEstimator(int id, VS::ThreadSafeQueue<Image>& input_queue, VS::ThreadSafeQueue<CameraPoseSet>& output_queue);
-    
-    ~PoseEstimator();
 };
 }

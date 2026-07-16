@@ -1,8 +1,10 @@
 #include "Eigen/Dense"
 #include <algorithm>
+
 #include <apriltag/apriltag_pose.h>
 #include <apriltag/apriltag.h>
 #include <apriltag/tag36h11.h>
+#include <apriltag/common/zarray.h>
 #include <apriltag/common/zarray.h>
 
 #include "pose_estimation.hpp"
@@ -11,7 +13,6 @@
 #include "utils.hpp"
 #include <Eigen/src/Core/Matrix.h>
 #include <opencv2/core/eigen.hpp>
-#include <apriltag/common/zarray.h>
 #include <vector>
 
 VS::PoseEstimator::PoseEstimator(int id, VS::ThreadSafeQueue<Image>& input_queue, VS::ThreadSafeQueue<CameraPoseSet>& output_queue)
@@ -146,28 +147,46 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
 void VS::PoseEstimator::run() {
     VS::Image frame;
-    apriltag_detector_t *td_;
-    cv::Mat& frame_data = frame.frame;
-    VS::CameraPoseSet current_pose;
 
+    cv::Mat& frame_data = frame.frame;
+    cv::Mat gray_frame;
+
+    VS::CameraPoseSet current_pose;
     std::vector<VS::Points> points;
+
+    apriltag_family_t *tf = tag36h11_create();
+    apriltag_detector_t *td = apriltag_detector_create();
+    apriltag_detector_add_family(td, tf);
+
+    // Apriltag detector constants <------------------------------------- edit these?
+    td->quad_decimate = 1.0;
+    td->quad_sigma = 0.0;
+    td->nthreads = 2;
+    td->refine_edges = 1;
 
     while (true) {
         frame_queue.pop(frame);
         frame_data = frame.frame;
 
+        cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
+
         image_u8_t im{
             .width = frame_data.cols,
             .height = frame_data.rows,
             .stride = (int)frame_data.step, 
-            .buf = frame_data.data
+            .buf = gray_frame.data
         };
 
-        zarray_t *detections = apriltag_detector_detect(td_, im);
+        zarray_t *detections = apriltag_detector_detect(td, im);
 
         points = get_points(detections);
         current_pose = estimate_pose(points);
 
         output_pose_queue.push(current_pose);
+
+        zarray_destroy(detections);
     };
+
+    apriltag_detector_destroy(td);
+    tag36h11_destroy(tf);
 }
