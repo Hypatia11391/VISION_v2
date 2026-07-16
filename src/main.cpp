@@ -34,5 +34,12 @@ int main () {
 
     // Create networking thread.
 
+
+    // Make sure to wait for threads to finish
+    t_stream_1.join();
+    t_estimator_1.join();
+    t_stream_2.join();
+    t_estimator_2.join();
+
     return 0;
 }
