@@ -13,7 +13,7 @@ int main () {
     VS::ThreadSafeQueue<VS::CameraPoseSet> pose_queue_1;
 
     // Set up video streaming and pose estimator classes for camera 1
-    VS::VideoStream stream_1{1, image_queue_1, "ToDo - Add camera path"};
+    VS::VideoStream stream_1{1, image_queue_1, "/dev/video0"};
     VS::PoseEstimator estimator_1{1, image_queue_1, pose_queue_1};
 
     // Start stream and pose estimnaton threads for camera 1
@@ -25,7 +25,7 @@ int main () {
     VS::ThreadSafeQueue<VS::CameraPoseSet> pose_queue_2;
 
     // Set up video streaming and pose estimator classes for camera 2
-    VS::VideoStream stream_2{2, image_queue_2, "ToDo - Add camera path"};
+    VS::VideoStream stream_2{2, image_queue_2, "/dev/video2"};
     VS::PoseEstimator estimator_2{2, image_queue_2, pose_queue_2};
 
     // Start stream and pose estimnaton threads for camera 2
