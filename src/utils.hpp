@@ -9,7 +9,6 @@
 #include <condition_variable>
 #include <vector>
 
-#include "constants.hpp"
 #include "Eigen/Dense"
 #include <opencv2/opencv.hpp>
 
