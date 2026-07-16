@@ -54,4 +54,3 @@ void VS::VideoStream::video_stream() {
         }
     }
 }
-}
