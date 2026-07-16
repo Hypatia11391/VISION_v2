@@ -1,6 +1,5 @@
 #pragma once
 
-#include "constants.hpp"
 #include <Eigen/src/Core/Matrix.h>
 #include <chrono>
 #include <string>

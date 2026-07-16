@@ -11,7 +11,6 @@
 #include "apriltag_locs.hpp"
 #include "constants.hpp"
 #include "utils.hpp"
-#include <Eigen/src/Core/Matrix.h>
 #include <opencv2/core/eigen.hpp>
 #include <vector>
 
