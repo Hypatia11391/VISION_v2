@@ -21,7 +21,7 @@ namespace Constants {
         {18, 19, 20, 21, 24, 25, 26, 27}
     }};
 
-    inline constexpr std::vector<VS::CameraInfo> cameras = {
+    inline const std::vector<VS::CameraInfo> cameras = {
         // --- CAMERA 1 ---
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
