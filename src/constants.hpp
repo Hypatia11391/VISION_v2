@@ -29,7 +29,7 @@ namespace Constants {
             cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
                         0.0         , 969.8771812, 519.93781744,
                         0.0         , 0.0        , 1.0          )
-        }
+        },
         
         // --- CAMERA 2 ---
         {

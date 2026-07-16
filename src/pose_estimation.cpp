@@ -176,7 +176,7 @@ void VS::PoseEstimator::run() {
             .buf = gray_frame.data
         };
 
-        zarray_t *detections = apriltag_detector_detect(td, im);
+        zarray_t *detections = apriltag_detector_detect(td, &im);
 
         points = get_points(detections);
         current_pose = estimate_pose(points);
