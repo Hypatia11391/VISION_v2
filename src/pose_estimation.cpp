@@ -177,11 +177,13 @@ void VS::PoseEstimator::run() {
         };
 
         zarray_t *detections = apriltag_detector_detect(td, &im);
+        
+        if (zarray_size(detections) > 0) {
+            points = get_points(detections);
+            current_pose = estimate_pose(points);
 
-        points = get_points(detections);
-        current_pose = estimate_pose(points);
-
-        output_pose_queue.push(current_pose);
+            output_pose_queue.push(current_pose);
+        }
 
         zarray_destroy(detections);
     };
