@@ -184,7 +184,7 @@ void VS::PoseEstimator::run() {
             .buf = gray_frame.data
         };
 
-        zarray_t *detections = apriltag_detector_detect(td, im); // <------------- reference image?
+        zarray_t *detections = apriltag_detector_detect(td, &im); // <------------- reference image?
         
         if (zarray_size(detections) > 0) {
             points = get_points(detections);
