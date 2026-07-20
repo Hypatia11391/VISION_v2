@@ -1,6 +1,6 @@
-CXX := g++
+:qCXX := g++
 
-NATIVE := $(VIRTUAL_ENV)/lib/python3.11/site-packages/native
+NATIVE := $(VIRTUAL_ENV)/lib/python3.13/site-packages/native
 WPI := $(NATIVE)/ntcore
 
 CXXFLAGS := -std=c++20 -O2 \
@@ -22,7 +22,7 @@ LDFLAGS := \
 LDLIBS := -lntcore -lwpinet -lwpiutil
 
 TARGET := ntclient
-SRC := main.cpp
+SRC := ntclient.cpp
 
 all: $(TARGET)
 

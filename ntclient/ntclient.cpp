@@ -7,7 +7,7 @@
 int main() {
     auto nt = nt::NetworkTableInstance::GetDefault();
     nt.StartClient4("RaspberryPiVision");
-    nt.SetServer("localhost", 5810); // <-- REPLACE with your Mac's actual IP!
+    nt.SetServer("192.168.0.44", 5810);
 
     auto table = nt.GetTable("Vision");
     auto posePub = table->GetDoubleArrayTopic("robot_pose").Publish();
