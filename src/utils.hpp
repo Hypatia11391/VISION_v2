@@ -25,6 +25,7 @@ struct CameraInfo {
     int cam_FPS;
     std::vector<double> distortion_constants;
     cv::Matx33d intrinsics;
+    const std::string device_path;
 };
 
 struct Image {

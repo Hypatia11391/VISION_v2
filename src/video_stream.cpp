@@ -7,12 +7,12 @@
 #include "constants.hpp"
 #include "video_stream.hpp"
 
-VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue, const std::string device_path)
-    : cam_id(id), output_queue(queue), device_path(device_path) {}
+VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue)
+    : cam_id(id), output_queue(queue) {}
 
 void VS::VideoStream::video_stream() {
     // Initialize camera using the persistent V4L2 path
-    cv::VideoCapture cap(device_path, cv::CAP_V4L2);
+    cv::VideoCapture cap(Constants::cameras[0].device_path, cv::CAP_V4L2);
 
     if (!cap.isOpened()) {
         std::cout << "Error: Could not open camera " << cam_id << " at " << device_path << std::endl;

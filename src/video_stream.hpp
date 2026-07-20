@@ -11,7 +11,7 @@ private:
     const std::string device_path;
 
 public:
-    VideoStream(int cam_id, VS::ThreadSafeQueue<Image>& output_queue, const std::string device_path);
+    VideoStream(int cam_id, VS::ThreadSafeQueue<Image>& output_queue);
 
     void video_stream();
 

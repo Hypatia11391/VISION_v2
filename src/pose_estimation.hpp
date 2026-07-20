@@ -1,8 +1,5 @@
 #pragma once
 
-// Standard C++
-//#include <vector>
-
 // Libraries
 #include <Eigen/src/Core/Matrix.h>
 #include <apriltag/apriltag_pose.h>
