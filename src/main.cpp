@@ -17,9 +17,9 @@ int main () {
     VS::PoseEstimator estimator_0{0, image_queue_0, pose_queue_0};
 
     // Start stream and pose estimnaton threads for camera 0
-    std::cout << "[INFO] Starting video stream 0 thread" << "/n";
+    std::cout << "[INFO] Starting video stream 0 thread" << std::endl;
     std::thread t_stream_0(&VS::VideoStream::video_stream, &stream_0);
-    std::cout << "[INFO] Starting pose estimator 0 thread" << "/n";
+    std::cout << "[INFO] Starting pose estimator 0 thread" << std::endl;
     std::thread t_estimator_0(&VS::PoseEstimator::run, &estimator_0);
 
     // Set up queues for camera 1
@@ -31,9 +31,9 @@ int main () {
     VS::PoseEstimator estimator_1{1, image_queue_1, pose_queue_1};
 
     // Start stream and pose estimnaton threads for camera 1
-    std::cout << "[INFO] Starting video stream 1 thread" << "/n";
+    std::cout << "[INFO] Starting video stream 1 thread" << std::endl;
     std::thread t_stream_1(&VS::VideoStream::video_stream, &stream_1);
-    std::cout << "[INFO] Starting pose estimator 1 thread" << "/n";
+    std::cout << "[INFO] Starting pose estimator 1 thread" << std::endl;
     std::thread t_estimator_1(&VS::PoseEstimator::run, &estimator_1);
 
     // Create networking thread.
