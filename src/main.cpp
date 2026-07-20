@@ -1,8 +1,6 @@
-#include <vector>
 #include <thread>
 
 #include "utils.hpp"
-#include "constants.hpp"
 
 #include "video_stream.hpp"
 #include "pose_estimation.hpp"

@@ -25,6 +25,10 @@ target_link_libraries(VisionSystem PRIVATE
     Eigen3::Eigen
 )
 
+target_compile_options(VisionSystem PRIVATE 
+    $<$<CONFIG:Debug>:-Og -Wall>
+)
+
 target_sources(VisionSystem PRIVATE)
 
 target_include_directories(VisionSystem PRIVATE
