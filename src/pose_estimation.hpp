@@ -1,7 +1,6 @@
 #pragma once
 
 // Libraries
-#include <Eigen/src/Core/Matrix.h>
 #include <apriltag/apriltag_pose.h>
 #include <apriltag/apriltag.h>
 #include <apriltag/tag36h11.h>
@@ -11,7 +10,6 @@
 #include "Eigen/Dense"
 
 // Custom Headers
-#include "constants.hpp"
 #include "utils.hpp"
 
 namespace VS {

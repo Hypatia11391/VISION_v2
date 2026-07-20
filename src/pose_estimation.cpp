@@ -109,6 +109,10 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
     out.camera_id = cam_id;
     
     for (const auto& points_in_ref_frame : points) {
+        if (points_in_ref_frame.obj_points.size() < 4) {
+            continue;
+        }
+
         VS::CameraPose pose;
 
         cv::Mat rvec;
@@ -128,6 +132,10 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
                                                 inliers,
                                                 cv::SOLVEPNP_ITERATIVE
         );
+
+        if (!successfulPnP) {
+            continue;
+        }
 
         // Convert output Rodrigues and tvec to 4x4 transform matrix
         pose.pose = VS::getTransform(rvec, tvec);
