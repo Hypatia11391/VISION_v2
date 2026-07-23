@@ -1,4 +1,6 @@
-At runtime:
-
-/opt/gcc-15/include/c++/15.2.0/bits/stl_vector.h:1282: constexpr std::vector<_Tp, _Alloc>::const_reference std::vector<_Tp, _Alloc>::operator[](size_type) const [with _Tp = VS::CameraInfo; _Alloc = std::allocator<VS::CameraInfo>; const_reference = const VS::CameraInfo&; size_type = long unsigned int]: Assertion '__n < this->size()' failed.
+[INFO] Starting video stream 0 thread
+[INFO] Starting pose estimator 0 thread
+[INFO] Starting video stream 1 thread
+[INFO] Starting pose estimator 1 thread
+/opt/gcc-15/include/c++/15.2.0/bits/stl_vector.h:1263: constexpr std::vector<_Tp, _Alloc>::reference std::vector<_Tp, _Alloc>::operator[](size_type) [with _Tp = cv::Point_<double>; _Alloc = std::allocator<cv::Point_<double> >; reference = cv::Point_<double>&; size_type = long unsigned int]: Assertion '__n < this->size()' failed.
 Aborted
