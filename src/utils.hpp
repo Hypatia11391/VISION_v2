@@ -13,8 +13,8 @@ namespace  VS {
 
 struct Points{
     int set_id;
-    std::vector<cv::Point3f> obj_points;
-    std::vector<cv::Point2f> img_points;
+    std::vector<cv::Point3d> obj_points;
+    std::vector<cv::Point2d> img_points;
 };
 
 struct CameraInfo {

@@ -70,7 +70,7 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
         (inlier_points.obj_points)[inlier] = (actual_points.obj_points)[inlier_idx];
     }
 
-    std::vector<cv::Point2f> reprojected_points;
+    std::vector<cv::Point2d> reprojected_points;
     cv::Mat jacobian;
 
     Eigen::MatrixXd delta_im_pts(2*num_inliers, 1); // <---------------------------- Wrong shape? Transpose?
@@ -85,7 +85,7 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
                       jacobian
     );
 
-    std::vector<cv::Point2f> delta_im_pts_cv;
+    std::vector<cv::Point2d> delta_im_pts_cv;
     std::transform(reprojected_points.begin(), reprojected_points.end(), (inlier_points.img_points).begin(), delta_im_pts_cv.begin(), std::minus<cv::Point2d>());
 
     for (int point = 0; point < num_inliers; point++) {
