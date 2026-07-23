@@ -173,14 +173,14 @@ void VS::PoseEstimator::run() {
 
     while (true) {
         frame_queue.pop(frame);
-        frame_data = frame.frame;
+        //frame_data = frame.frame;
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
         image_u8_t im{
-            .width = frame_data.cols,
-            .height = frame_data.rows,
-            .stride = (int)frame_data.step, 
+            .width = gray_frame.cols,
+            .height = gray_frame.rows,
+            .stride = (int)gray_frame.step, 
             .buf = gray_frame.data
         };
 
