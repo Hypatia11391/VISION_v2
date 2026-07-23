@@ -60,8 +60,8 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
 
     // Define the inlier points
     VS::Points inlier_points;
-    inlier_points.img_points.reserve(num_inliers);
-    inlier_points.obj_points.reserve(num_inliers);
+    inlier_points.img_points.resize(num_inliers);
+    inlier_points.obj_points.resize(num_inliers);
 
     std::cout <<"[DEBUG] initialized inlier points. About to fill." << std::endl;
 
@@ -70,8 +70,8 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
 
 	std::cout << "[DEBUG] Properly indexed cv::Mat." << std::endl;
 
-        (inlier_points.img_points).at(inlier) = (actual_points.img_points).at(inlier_idx);
-        (inlier_points.obj_points).at(inlier) = (actual_points.obj_points).at(inlier_idx);
+        inlier_points.img_points.at(inlier) = actual_points.img_points.at(inlier_idx);
+        inlier_points.obj_points.at(inlier) = actual_points.obj_points.at(inlier_idx);
     }
 
     std::cout << "[DEBUG] Size of inlier_points: " << inlier_points.img_points.size() << std::endl;
