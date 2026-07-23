@@ -64,7 +64,7 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     inlier_points.obj_points.reserve(num_inliers);
 
     for (int inlier = 0; inlier < num_inliers; inlier ++) {
-        int inlier_idx = inliers.at<float>(inlier, 0);
+        int inlier_idx = inliers.at<int>(inlier, 0);
 
         (inlier_points.img_points)[inlier] = (actual_points.img_points)[inlier_idx];
         (inlier_points.obj_points)[inlier] = (actual_points.obj_points)[inlier_idx];
