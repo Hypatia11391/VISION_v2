@@ -151,6 +151,7 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
         // Get pose standard deviations
         pose.uncertainty = get_stds(points_in_ref_frame, inliers, rvec, tvec);
+        std::cout << "[DEBUG] successfully gotten stds" << std::endl;
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 
