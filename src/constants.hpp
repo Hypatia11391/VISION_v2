@@ -29,7 +29,7 @@ namespace Constants {
             cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
                                     0.0         , 969.8771812, 519.93781744,
                                     0.0         , 0.0        , 1.0          ),
-            "usb-xhci-hcd.0-1" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
+            "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         },
         
         // --- CAMERA 2 ---
@@ -39,7 +39,7 @@ namespace Constants {
             cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
                                     0.0         , 969.8771812, 519.93781744,
                                     0.0         , 0.0        , 1.0          ),
-            "usb-xhci-hcd.1-1" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
+            "/dev/v4l/by-path/platform-xhci-hcd.1-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         }
     };
 
