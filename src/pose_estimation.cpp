@@ -94,9 +94,9 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     std::cout << "[DEBUG] Size of img_points: " << actual_points.img_points.size() << std::endl;
     std::cout << "[DEBUG] Size of projected_points: " << reprojected_points.size() << std::endl;
 
-    // <----------------------------------------------------- Segmentation fault between here and end of function
     std::vector<cv::Point2d> delta_im_pts_cv;
-    std::transform(reprojected_points.begin(), reprojected_points.end(), (inlier_points.img_points).begin(), delta_im_pts_cv.begin(), std::minus<cv::Point2d>());
+    // Segmentation fault on next line
+    std::transform(reprojected_points.begin(), reprojected_points.end(), inlier_points.img_points.begin(), std::back_inserter(delta_im_pts_cv), std::minus<cv::Point2d>());
 
     std::cout << "[DEBUG] Successfull subraction." << std::endl;
 
