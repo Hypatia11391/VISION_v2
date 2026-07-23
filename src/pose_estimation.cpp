@@ -63,6 +63,8 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     inlier_points.img_points.reserve(num_inliers);
     inlier_points.obj_points.reserve(num_inliers);
 
+    std::cout <<"[DEBUG] initialized inlier points. About to fill." << std::endl;
+
     for (int inlier = 0; inlier < num_inliers; inlier ++) {
         int inlier_idx = inliers.at<int>(inlier, 0);
 
