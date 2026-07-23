@@ -63,18 +63,12 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     inlier_points.img_points.resize(num_inliers);
     inlier_points.obj_points.resize(num_inliers);
 
-    std::cout <<"[DEBUG] initialized inlier points. About to fill." << std::endl;
-
     for (int inlier = 0; inlier < num_inliers; inlier ++) {
         int inlier_idx = inliers.at<int>(inlier, 0);
-
-	std::cout << "[DEBUG] Properly indexed cv::Mat." << std::endl;
 
         inlier_points.img_points.at(inlier) = actual_points.img_points.at(inlier_idx);
         inlier_points.obj_points.at(inlier) = actual_points.obj_points.at(inlier_idx);
     }
-
-    std::cout << "[DEBUG] Size of inlier_points: " << inlier_points.img_points.size() << std::endl;
 
     std::vector<cv::Point2d> reprojected_points;
     cv::Mat jacobian;
@@ -91,20 +85,13 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
                       jacobian
     );
 
-    std::cout << "[DEBUG] Size of img_points: " << actual_points.img_points.size() << std::endl;
-    std::cout << "[DEBUG] Size of projected_points: " << reprojected_points.size() << std::endl;
-
     std::vector<cv::Point2d> delta_im_pts_cv;
     std::transform(reprojected_points.begin(), reprojected_points.end(), inlier_points.img_points.begin(), std::back_inserter(delta_im_pts_cv), std::minus<cv::Point2d>());
-
-    std::cout << "[DEBUG] Successfull subraction." << std::endl;
 
     for (int point = 0; point < num_inliers; point++) {
         delta_im_pts(2*point, 0) = delta_im_pts_cv[point].x;
         delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point].y;
     }
-
-    std::cout << "[DEBUG] Successfull shape conversion of delta_im_points to delta_im_points_cv." << std::endl;
 
     jacobian = jacobian.colRange(0, 6);
     Eigen::MatrixXd eigen_jacobian(2*num_inliers, 6);
@@ -114,7 +101,6 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     Eigen::MatrixXd J_inv(6, 2*num_inliers);
     J_inv << VS::jacobianPsuedoInverse(eigen_jacobian);
     Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
-    std::cout << "[DEBUG] Successfull matrix math" << std::endl;
 
     return delta_pose;
 }
@@ -157,7 +143,6 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
         // Get pose standard deviations
         pose.uncertainty = get_stds(points_in_ref_frame, inliers, rvec, tvec);
-        std::cout << "[DEBUG] successfully gotten stds" << std::endl;
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 
