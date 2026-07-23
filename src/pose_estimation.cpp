@@ -70,6 +70,8 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
         (inlier_points.obj_points)[inlier] = (actual_points.obj_points)[inlier_idx];
     }
 
+    std::cout << "[DEBUG] Size of inlier_points: " << inlier_points.img_points.size() << std::endl;
+
     std::vector<cv::Point2d> reprojected_points;
     cv::Mat jacobian;
 
@@ -84,6 +86,9 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
                       reprojected_points,
                       jacobian
     );
+
+    std::cout << "[DEBUG] Size of img_points: " << actual_points.img_points.size() << std::endl;
+    std::cout << "[DEBUG] Size of projected_points: " << reprojected_points.size() << std::endl;
 
     std::vector<cv::Point2d> delta_im_pts_cv;
     std::transform(reprojected_points.begin(), reprojected_points.end(), (inlier_points.img_points).begin(), delta_im_pts_cv.begin(), std::minus<cv::Point2d>());
