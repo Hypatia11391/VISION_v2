@@ -68,8 +68,10 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     for (int inlier = 0; inlier < num_inliers; inlier ++) {
         int inlier_idx = inliers.at<int>(inlier, 0);
 
-        (inlier_points.img_points)[inlier] = (actual_points.img_points)[inlier_idx];
-        (inlier_points.obj_points)[inlier] = (actual_points.obj_points)[inlier_idx];
+	std::cout << "[DEBUG] Properly indexed cv::Mat." << std::endl;
+
+        (inlier_points.img_points).at(inlier) = (actual_points.img_points).at(inlier_idx);
+        (inlier_points.obj_points).at(inlier) = (actual_points.obj_points).at(inlier_idx);
     }
 
     std::cout << "[DEBUG] Size of inlier_points: " << inlier_points.img_points.size() << std::endl;
