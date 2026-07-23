@@ -94,13 +94,18 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     std::cout << "[DEBUG] Size of img_points: " << actual_points.img_points.size() << std::endl;
     std::cout << "[DEBUG] Size of projected_points: " << reprojected_points.size() << std::endl;
 
+    // <----------------------------------------------------- Segmentation fault between here and end of function
     std::vector<cv::Point2d> delta_im_pts_cv;
     std::transform(reprojected_points.begin(), reprojected_points.end(), (inlier_points.img_points).begin(), delta_im_pts_cv.begin(), std::minus<cv::Point2d>());
+
+    std::cout << "[DEBUG] Successfull subraction." << std::endl;
 
     for (int point = 0; point < num_inliers; point++) {
         delta_im_pts(2*point, 0) = delta_im_pts_cv[point].x;
         delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point].y;
     }
+
+    std::cout << "[DEBUG] Successfull shape conversion of delta_im_points_cv to delta_im_points." << std::endl;
 
     Eigen::MatrixXd eigen_jacobian;
     cv::cv2eigen(jacobian, eigen_jacobian);
@@ -109,6 +114,7 @@ Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points
     Eigen::MatrixXd J_inv(6, 2*num_inliers);
     J_inv << VS::jacobianPsuedoInverse(eigen_jacobian);
     Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
+    std::cout << "[DEBUG] Successfull matrix math" << std::endl;
 
     return delta_pose;
 }
