@@ -173,7 +173,6 @@ void VS::PoseEstimator::run() {
 
     while (true) {
         frame_queue.pop(frame);
-        //frame_data = frame.frame;
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
@@ -189,6 +188,7 @@ void VS::PoseEstimator::run() {
         if (zarray_size(detections) > 0) {
             points = get_points(detections);
             current_pose = estimate_pose(points);
+            std::cout << current_pose.camera_poses[0].pose << std::endl;
 
             output_pose_queue.push(current_pose);
         }
