@@ -155,8 +155,6 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
 void VS::PoseEstimator::run() {
     VS::Image frame;
-
-    cv::Mat& frame_data = frame.frame;
     cv::Mat gray_frame;
 
     VS::CameraPoseSet current_pose;
