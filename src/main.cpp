@@ -1,5 +1,7 @@
 #include <thread>
+#include <vector>
 
+#include "network.hpp"
 #include "utils.hpp"
 
 #include "video_stream.hpp"
@@ -35,13 +37,20 @@ int main () {
     std::thread t_estimator_1(&VS::PoseEstimator::run, &estimator_1);
 
     // Create networking thread.
-
+    std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>> pose_queues;
+    pose_queues.push_back(pose_queue_0);
+    pose_queues.push_back(pose_queue_1);
+    
+    VS::Network network_obj(pose_queues);
+    std::cout << "[INFO] Starting networking thread" << std::endl;
+    std::thread t_network(&VS::Network::run, network_obj);
 
     // Make sure to wait for threads to finish
     t_stream_0.join();
     t_estimator_0.join();
     t_stream_1.join();
     t_estimator_1.join();
+    t_network.join();
 
     return 0;
 }
