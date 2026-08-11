@@ -26,9 +26,9 @@ void VS::Network::run() {
                 // Serialize CameraPose struct into an array of doubles
                 std::vector<double> pose_vector;
                 pose_vector.push_back(poses[i].timestamp);
-                pose_vector.push_back(static_cast<double>(poses[i].camera_id))
+                pose_vector.push_back(static_cast<double>(poses[i].camera_id));
                 
-                camera_pose = poses[i].camera_poses[j];
+                VS::CameraPose camera_pose = poses[i].camera_poses[j];
                 pose_vector.push_back(static_cast<double>(camera_pose.apriltag_set_number));
                 pose_vector.insert(pose_vector.end(), camera_pose.pose.data(), camera_pose.pose.data()+camera_pose.pose.size());
                 pose_vector.insert(pose_vector.end(), camera_pose.uncertainty.data(), camera_pose.uncertainty.data()+camera_pose.uncertainty.size());
