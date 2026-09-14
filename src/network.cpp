@@ -3,6 +3,10 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <networktables/NetworkTableInstance.h>
+#include <networktables/NetworkTable.h>
+#include <networktables/DoubleTopic.h>
+#include <networktables/DoubleArrayTopic.h>
 
 VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>> input_queues) : pose_queues(input_queues) {}
 
@@ -40,5 +44,3 @@ void VS::Network::run() {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Sleep between pose checks. TODO delay may need to be adjusted or removed depending on how fast new pose data is being added to pose_queues
     }
 }
-
-void 
