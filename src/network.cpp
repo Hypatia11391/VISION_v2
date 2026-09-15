@@ -8,7 +8,7 @@
 #include <networktables/DoubleTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 
-VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>> input_queues) : pose_queues(input_queues) {}
+VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> input_queues) : pose_queues(input_queues) {}
 
 void VS::Network::run() {
     auto nt = nt::NetworkTableInstance::GetDefault();

@@ -37,9 +37,9 @@ int main () {
     std::thread t_estimator_1(&VS::PoseEstimator::run, &estimator_1);
 
     // Create networking thread.
-    std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>> pose_queues;
-    pose_queues.push_back(pose_queue_0);
-    pose_queues.push_back(pose_queue_1);
+    std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> pose_queues;
+    pose_queues.push_back(&pose_queue_0);
+    pose_queues.push_back(&pose_queue_1);
     
     VS::Network network_obj(pose_queues);
     std::cout << "[INFO] Starting networking thread" << std::endl;
