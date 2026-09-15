@@ -65,7 +65,7 @@ inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double la
 
 inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
     cv::Mat rotation_matrix;
-    Eigen::Matrix4d T_out = Eigen::Matrix4d::Identity();// <------------- May need initialization.
+    Eigen::Matrix4d T_out;// = Eigen::Matrix4d::Identity();// <------------- May need initialization.
 
     // Convert the rotation vector
     cv::Rodrigues(rvec, rotation_matrix);
