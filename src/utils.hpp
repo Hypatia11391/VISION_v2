@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Eigen/src/Core/Matrix.h>
 #include <string>
 #include <queue>
 #include <mutex>
