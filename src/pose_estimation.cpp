@@ -187,6 +187,7 @@ void VS::PoseEstimator::run() {
         if (zarray_size(detections) > 0) {
             points = get_points(detections);
             current_pose = estimate_pose(points);
+            current_pose.timestamp = frame.timestamp;
 
             auto current_time_sys = std::chrono::system_clock::now();
             auto current_time = current_time_sys.time_since_epoch();
