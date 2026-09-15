@@ -24,7 +24,7 @@ void VS::Network::run() {
 
     while (true) {
         for (int i = 0; i < num_cams; i ++) {
-            pose_queues[i].pop(poses[i]);
+            pose_queues[i]->pop(poses[i]);
 
             for (int j = 0; j < poses[i].camera_poses.size(); j ++) {
                 // Serialize CameraPose struct into an array of doubles
