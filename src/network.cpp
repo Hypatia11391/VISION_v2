@@ -41,6 +41,6 @@ void VS::Network::run() {
             }
         }
         
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Sleep between pose checks. TODO delay may need to be adjusted or removed depending on how fast new pose data is being added to pose_queues
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));  // Sleep between pose checks. TODO delay may need to be adjusted or removed depending on how fast new pose data is being added to pose_queues
     }
 }

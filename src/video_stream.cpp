@@ -13,6 +13,10 @@ void VS::VideoStream::video_stream() {
     // Initialize camera using the persistent V4L2 path
     cv::VideoCapture cap(Constants::cameras[cam_id].device_path, cv::CAP_V4L2);
 
+    auto start_of_stream_time = std::chrono::system_clock::now();
+    auto start_of_stream = start_of_stream_time.time_since_epoch();
+    double ms = std::chrono::duration_cast<std::chrono::milliseconds>(start_of_stream).count();
+
     if (!cap.isOpened()) {
         std::cout << "Error: Could not open camera " << cam_id << " at " << Constants::cameras[cam_id].device_path << std::endl;
         return;
@@ -31,7 +35,7 @@ void VS::VideoStream::video_stream() {
     // Continuous capture loop
     while (true) {
         if (cap.grab()) {
-            capture_time = cap.get(cv::CAP_PROP_POS_MSEC);
+            capture_time = cap.get(cv::CAP_PROP_POS_MSEC) + ms;
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;

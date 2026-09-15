@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/src/Core/Matrix.h>
 #include <string>
 #include <queue>
 #include <mutex>
@@ -64,7 +65,7 @@ inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double la
 
 inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
     cv::Mat rotation_matrix;
-    Eigen::Matrix4d T_out;// = Eigen::Matrix4d::Identity(); <------------- May need initialization.
+    Eigen::Matrix4d T_out; // = Eigen::Matrix4d::Identity();// <------------- May need initialization.
 
     // Convert the rotation vector
     cv::Rodrigues(rvec, rotation_matrix);
@@ -73,6 +74,7 @@ inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
 
     // Convert the translation vector
     T_out.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
+    T_out.block<1,3>(3,0) = Eigen::Vector4d (0.0, 0.0, 0.0, 1.0);
 
     return T_out;
 }
