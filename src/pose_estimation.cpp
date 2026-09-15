@@ -193,7 +193,7 @@ void VS::PoseEstimator::run() {
             double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
 
             std::cout << "New pose from frame at timestamp: " << current_pose.timestamp << std::endl;
-            std::cout << "Processing time: " << current_ms - current_pose.timestamp;
+            std::cout << "Processing time: " << current_ms - current_pose.timestamp << std::endl;
             std::cout << current_pose.camera_poses[0].pose << std::endl;
 
             output_pose_queue.push(current_pose);

@@ -73,7 +73,7 @@ inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
 
     // Convert the translation vector
     T_out.block<3, 1>(0, 3) = Eigen::Vector3d::Map((double*)tvec.data);
-    //T_out.block<1,3>(3,0) = Eigen::Vector4d(0.0, 0.0, 0.0, 1.0);
+    T_out.block<1,3>(3,0) = Eigen::Vector4d(0.0, 0.0, 0.0, 1.0);
 
     return T_out;
 }
