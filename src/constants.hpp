@@ -43,6 +43,11 @@ namespace Constants {
         }
     };
 
+    inline constexpr double quad_decimate = 2.0;
+    inline constexpr double quad_sigma = 0.0;
+    inline constexpr int nthreads = 2;
+    inline constexpr int refine_edges = 1;
+    
     inline constexpr int iterations = 100; // Number of iterations for the PnP algorithm to run
     inline constexpr double reprojection_error = 8.0;// reprojectionError (threshold to consider a point an inlier)
     inline constexpr double req_confidence = 0.99; // Required confidence for the pnp algorithm. Increasing requires more iterations.

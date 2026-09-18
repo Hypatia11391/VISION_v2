@@ -42,7 +42,7 @@ void VS::VideoStream::video_stream() {
     while (true) {
 
         if (cap.grab()) {
-            capture_time_monotomic =cap.get(cv::CAP_PROP_POS_MSEC);
+            capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;

@@ -165,10 +165,10 @@ void VS::PoseEstimator::run() {
     apriltag_detector_add_family(td, tf);
 
     // Apriltag detector constants <------------------------------------- edit these?
-    td->quad_decimate = 1.0;
-    td->quad_sigma = 0.0;
-    td->nthreads = 2;
-    td->refine_edges = 1;
+    td->quad_decimate = Constants::quad_decimate;
+    td->quad_sigma = Constants::quad_sigma;
+    td->nthreads = Constants::nthreads;
+    td->refine_edges = Constants::refine_edges;
 
     while (true) {
         auto start = std::chrono::high_resolution_clock::now();
