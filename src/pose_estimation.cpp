@@ -171,7 +171,12 @@ void VS::PoseEstimator::run() {
     td->refine_edges = 1;
 
     while (true) {
+        auto start = std::chrono::high_resolution_clock::now();
         frame_queue.pop(frame);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        
+        std::cout << "Got image in: " << duration.count() << " ns\n";
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
@@ -182,13 +187,18 @@ void VS::PoseEstimator::run() {
             .buf = gray_frame.data
         };
 
+        start = std::chrono::high_resolution_clock::now();
         zarray_t *detections = apriltag_detector_detect(td, &im); // <------------- reference image?
+        end = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        
+        std::cout << "Got detections in: " << duration.count() << " ns\n";
         
         if (zarray_size(detections) > 0) {
-            auto start = std::chrono::high_resolution_clock::now();
+            start = std::chrono::high_resolution_clock::now();
             points = get_points(detections);
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
             
             std::cout << "Got image points in: " << duration.count() << " ns\n";
 
