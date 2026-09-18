@@ -185,8 +185,20 @@ void VS::PoseEstimator::run() {
         zarray_t *detections = apriltag_detector_detect(td, &im); // <------------- reference image?
         
         if (zarray_size(detections) > 0) {
+            auto start = std::chrono::high_resolution_clock::now();
             points = get_points(detections);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+            
+            std::cout << "Got image points in: " << duration.count() << " ns\n";
+
+            start = std::chrono::high_resolution_clock::now();
             current_pose = estimate_pose(points);
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+            
+            std::cout << "Got pose in: " << duration.count() << " ns\n";
+            
             current_pose.timestamp = frame.timestamp;
 
             auto current_time_sys = std::chrono::system_clock::now();
