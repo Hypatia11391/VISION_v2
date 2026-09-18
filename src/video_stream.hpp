@@ -12,6 +12,7 @@ private:
 public:
     VideoStream(int cam_id, VS::ThreadSafeQueue<Image>& output_queue);
 
+    double compute_realtime_monotonic_offset_ms();
     void video_stream();
 
 };

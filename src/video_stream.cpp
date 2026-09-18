@@ -13,14 +13,20 @@ void VS::VideoStream::video_stream() {
     // Initialize camera using the persistent V4L2 path
     cv::VideoCapture cap(Constants::cameras[cam_id].device_path, cv::CAP_V4L2);
 
-    auto start_of_stream_time = std::chrono::system_clock::now();
-    auto start_of_stream = start_of_stream_time.time_since_epoch();
-    double ms = std::chrono::duration_cast<std::chrono::milliseconds>(start_of_stream).count();
-
     if (!cap.isOpened()) {
         std::cout << "Error: Could not open camera " << cam_id << " at " << Constants::cameras[cam_id].device_path << std::endl;
         return;
     }
+
+    // Calc time offset between monotomic and systemclock
+    auto rt1 = std::chrono::system_clock::now();
+    auto mono = std::chrono::steady_clock::now(); // Note: steady clock is the monotomic
+    auto rt2 = std::chrono::system_clock::now();
+    double rt1_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt1.time_since_epoch()).count();
+    double rt2_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt2.time_since_epoch()).count();
+    double mono_ms = duration_cast<std::chrono::duration<double, std::milli>>(mono.time_since_epoch()).count();
+    double rt_mid_ms = (rt1_ms + rt2_ms) / 2.0;
+    double offset = rt_mid_ms - mono_ms;
 
     // Hardware configurations.
     cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G')); // <------ try YUV2. That might be bad, or might work better.
@@ -30,12 +36,13 @@ void VS::VideoStream::video_stream() {
 
     uint64_t frame_count = 0;
     cv::Mat current_frame;
-    double capture_time;
+    double capture_time_monotomic;
 
     // Continuous capture loop
     while (true) {
+
         if (cap.grab()) {
-            capture_time = cap.get(cv::CAP_PROP_POS_MSEC) + ms;
+            capture_time_monotomic = cap.get(cap.get(cv::CAP_PROP_POS_MSEC));
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
@@ -49,7 +56,7 @@ void VS::VideoStream::video_stream() {
             Image image;
             image.frame = current_frame.clone();
             image.camera_id = cam_id;
-            image.timestamp = capture_time;
+            image.timestamp = capture_time_monotomic + offset;
             image.frame_sequence_number = frame_count;
 
             // Push to the compute thread
