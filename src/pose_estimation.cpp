@@ -55,54 +55,50 @@ std::vector<VS::Points> VS::PoseEstimator::get_points(zarray_t *detections){ // 
     return out;
 }
 
-Eigen::Matrix<double, 6, 1> VS::PoseEstimator::get_stds(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec){
-    const int num_inliers = inliers.rows;
+Eigen::Matrix<double, 6, 6> VS::PoseEstimator::get_cov_mat(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec) {
+    using Mat6 = Eigen::Matrix<double, 6, 6>;
 
-    // Define the inlier points
-    VS::Points inlier_points;
-    inlier_points.img_points.resize(num_inliers);
-    inlier_points.obj_points.resize(num_inliers);
+    const Mat6 bad = Mat6::Identity() * 1e9;
+    const int N = inliers.rows;
+    const int total = actual_points.obj_points.size();
+    if (N < 4) return bad;
 
-    for (int inlier = 0; inlier < num_inliers; inlier ++) {
-        int inlier_idx = inliers.at<int>(inlier, 0);
-
-        inlier_points.img_points.at(inlier) = actual_points.img_points.at(inlier_idx);
-        inlier_points.obj_points.at(inlier) = actual_points.obj_points.at(inlier_idx);
+    std::vector<cv::Point3d> obj_pts(N);
+    std::vector<cv::Point2d> img_pts(N);
+    for (int i = 0; i < N; i++) {
+        int idx = inliers.at<int>(i, 0);
+        obj_pts[i] = actual_points.obj_points.at(idx);
+        img_pts[i] = actual_points.img_points.at(idx);
     }
 
-    std::vector<cv::Point2d> reprojected_points;
+    std::vector<cv::Point2d> reprojected;
     cv::Mat jacobian;
-
-    Eigen::MatrixXd delta_im_pts(2*num_inliers, 1); // <---------------------------- Wrong shape? Transpose?
-    Eigen::MatrixXd standard_divs(num_inliers, 6);
-
-    cv::projectPoints(inlier_points.obj_points,
-                      rvec,
-                      tvec,
+    cv::projectPoints(obj_pts, rvec, tvec,
                       Constants::cameras[cam_id].intrinsics,
                       Constants::cameras[cam_id].distortion_constants,
-                      reprojected_points,
-                      jacobian
-    );
+                      reprojected, jacobian);
 
-    std::vector<cv::Point2d> delta_im_pts_cv;
-    std::transform(reprojected_points.begin(), reprojected_points.end(), inlier_points.img_points.begin(), std::back_inserter(delta_im_pts_cv), std::minus<cv::Point2d>());
-
-    for (int point = 0; point < num_inliers; point++) {
-        delta_im_pts(2*point, 0) = delta_im_pts_cv[point].x;
-        delta_im_pts(2*point + 1, 0) = delta_im_pts_cv[point].y;
+    Eigen::VectorXd r(2 * N);
+    for (int i = 0; i < N; i++) {
+        r(2 * i)     = reprojected[i].x - img_pts[i].x;
+        r(2 * i + 1) = reprojected[i].y - img_pts[i].y;
     }
 
-    jacobian = jacobian.colRange(0, 6);
-    Eigen::MatrixXd eigen_jacobian(2*num_inliers, 6);
-    cv::cv2eigen(jacobian, eigen_jacobian);
+    Eigen::MatrixXd J;
+    cv::cv2eigen(jacobian.colRange(0, 6), J);
 
-    // take the inverse of the jacobian, then multiply by delta im points to get delta pose.
-    Eigen::MatrixXd J_inv(6, 2*num_inliers);
-    J_inv << VS::jacobianPsuedoInverse(eigen_jacobian);
-    Eigen::Matrix<double, 6, 1> delta_pose = J_inv * delta_im_pts;
+    Mat6 H = (J.transpose() * J) / Constants::pixel_sigma_sq; // (JᵀJ) / σ² or the inverse of the cov matrix
 
-    return delta_pose;
+    // Convert to cov mat in a numerically stable manner
+    Eigen::LDLT<Mat6> ldlt(H);
+    if (ldlt.info() != Eigen::Success || ldlt.rcond() < 1e-12) return bad;
+    Mat6 cov = ldlt.solve(Mat6::Identity());
+
+    // Scale based on other uncertainty measures.
+    const double chi2 = r.squaredNorm() / Constants::pixel_sigma_sq / (2.0 * N - 6.0);
+    cov *= std::max(1.0, chi2);                                  // inflate only
+    cov /= std::max(double(N) / total, 0.25);                    // rejected points => less trust
+    return cov;
 }
 
 VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> points) {
@@ -139,10 +135,10 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
         }
 
         // Convert output Rodrigues and tvec to 4x4 transform matrix
-        pose.pose = VS::getTransform(rvec, tvec);
+        pose.pose = VS::getTransform(rvec, tvec).inverse();
 
         // Get pose standard deviations
-        pose.uncertainty = get_stds(points_in_ref_frame, inliers, rvec, tvec);
+        pose.uncertainty = get_cov_mat(points_in_ref_frame, inliers, rvec, tvec);
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 

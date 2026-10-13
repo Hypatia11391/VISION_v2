@@ -22,7 +22,7 @@ namespace Constants {
     }};
 
     inline const std::vector<VS::CameraInfo> cameras = {
-        // --- CAMERA 1 ---
+        // --- CAMERA 1 --- This is the camera with the purple lens clamp
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
@@ -32,7 +32,7 @@ namespace Constants {
             "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         },
         
-        // --- CAMERA 2 ---
+        // --- CAMERA 2 --- This is the camera with the black lens clamp
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
@@ -52,5 +52,5 @@ namespace Constants {
     inline constexpr double reprojection_error = 8.0;// reprojectionError (threshold to consider a point an inlier)
     inline constexpr double req_confidence = 0.99; // Required confidence for the pnp algorithm. Increasing requires more iterations.
 
-    inline constexpr double avg_pixel_error = 1.0; // The average error in image point [pixels]
+    inline constexpr double pixel_sigma_sq = 1.0; // The estimated squared standard deviation in image point [pixels] accuracy
 }

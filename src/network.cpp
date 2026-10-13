@@ -13,7 +13,7 @@ VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> input_
 void VS::Network::run() {
     auto nt = nt::NetworkTableInstance::GetDefault();
     nt.StartClient4("RaspberryPiVision");
-    nt.SetServer("192.168.0.44", 5810);
+    //nt.SetServer("192.168.0.44", 5810); // <----------------- May not be needed
 
     auto table = nt.GetTable("Vision");
     auto pose_pub = table->GetDoubleArrayTopic("pose").Publish();
@@ -26,7 +26,7 @@ void VS::Network::run() {
         for (int i = 0; i < num_cams; i ++) {
             pose_queues[i]->pop(poses[i]);
 
-            for (int j = 0; j < poses[i].camera_poses.size(); j ++) {
+            for (int j = 0; j < poses[i].camera_poses.size(); j ++) { // <---------------------- Might fail because num poses is > than num cameras
                 // Serialize CameraPose struct into an array of doubles
                 std::vector<double> pose_vector;
                 pose_vector.push_back(poses[i].timestamp);
