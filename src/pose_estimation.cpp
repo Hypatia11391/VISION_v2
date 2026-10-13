@@ -55,52 +55,6 @@ std::vector<VS::Points> VS::PoseEstimator::get_points(zarray_t *detections){ // 
     return out;
 }
 
-Eigen::Matrix<double, 6, 6> VS::PoseEstimator::get_cov_mat(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec) {
-    using Mat6 = Eigen::Matrix<double, 6, 6>;
-
-    const Mat6 bad = Mat6::Identity() * 1e9;
-    const int N = inliers.rows;
-    const int total = actual_points.obj_points.size();
-    if (N < 4) return bad;
-
-    std::vector<cv::Point3d> obj_pts(N);
-    std::vector<cv::Point2d> img_pts(N);
-    for (int i = 0; i < N; i++) {
-        int idx = inliers.at<int>(i, 0);
-        obj_pts[i] = actual_points.obj_points.at(idx);
-        img_pts[i] = actual_points.img_points.at(idx);
-    }
-
-    std::vector<cv::Point2d> reprojected;
-    cv::Mat jacobian;
-    cv::projectPoints(obj_pts, rvec, tvec,
-                      Constants::cameras[cam_id].intrinsics,
-                      Constants::cameras[cam_id].distortion_constants,
-                      reprojected, jacobian);
-
-    Eigen::VectorXd r(2 * N);
-    for (int i = 0; i < N; i++) {
-        r(2 * i)     = reprojected[i].x - img_pts[i].x;
-        r(2 * i + 1) = reprojected[i].y - img_pts[i].y;
-    }
-
-    Eigen::MatrixXd J;
-    cv::cv2eigen(jacobian.colRange(0, 6), J);
-
-    Mat6 H = (J.transpose() * J) / Constants::pixel_sigma_sq; // (JᵀJ) / σ² or the inverse of the cov matrix
-
-    // Convert to cov mat in a numerically stable manner
-    Eigen::LDLT<Mat6> ldlt(H);
-    if (ldlt.info() != Eigen::Success || ldlt.rcond() < 1e-12) return bad;
-    Mat6 cov = ldlt.solve(Mat6::Identity());
-
-    // Scale based on other uncertainty measures.
-    const double chi2 = r.squaredNorm() / Constants::pixel_sigma_sq / (2.0 * N - 6.0);
-    cov *= std::max(1.0, chi2);                                  // inflate only
-    cov /= std::max(double(N) / total, 0.25);                    // rejected points => less trust
-    return cov;
-}
-
 VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> points) {
     VS::CameraPoseSet out;
     out.camera_id = cam_id;
@@ -136,9 +90,6 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
         // Convert output Rodrigues and tvec to 4x4 transform matrix
         pose.pose = VS::getTransform(rvec, tvec).inverse();
-
-        // Get pose standard deviations
-        pose.uncertainty = get_cov_mat(points_in_ref_frame, inliers, rvec, tvec);
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 
