@@ -26,8 +26,8 @@ namespace Constants {
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
-            cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
-                                    0.0         , 969.8771812, 519.93781744,
+            cv::Matx33d(1373.92138, 0.0        ,   775.841832,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
+                                    0.0         , 1378.46488,  644.592015,
                                     0.0         , 0.0        , 1.0          ),
             "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         },
@@ -36,8 +36,8 @@ namespace Constants {
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
-            cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
-                                    0.0         , 969.8771812, 519.93781744,
+            cv::Matx33d(1373.92138, 0.0        ,   775.841832,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
+                                    0.0         , 1378.46488,  644.592015,
                                     0.0         , 0.0        , 1.0          ),
             "/dev/v4l/by-path/platform-xhci-hcd.1-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         }
