@@ -22,7 +22,7 @@ namespace Constants {
     }};
 
     inline const std::vector<VS::CameraInfo> cameras = {
-        // --- CAMERA 1 ---
+        // --- CAMERA 1 --- This is the black camera
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
@@ -32,7 +32,7 @@ namespace Constants {
             "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
         },
         
-        // --- CAMERA 2 ---
+        // --- CAMERA 2 --- This is the purple camera
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
             {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
