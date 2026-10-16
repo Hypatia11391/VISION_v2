@@ -78,6 +78,36 @@ inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
     return T_out;
 }
 
+inline Eigen::Matrix<double, 6, 6> transformPoseCovariance(
+    const Eigen::Matrix<double, 6, 6>& cov_in,
+    const Eigen::Matrix4d& T_source_to_target) // Transformation matrix from source to target frame
+    {
+    Eigen::Matrix3d R_source_to_target = T_source_to_target.block<3, 3>(0,0);
+
+    // Build the 6x6 Jacobian block matrix for a rigid body transformation
+    // State layout: [translation (3), rotation/orientation (3)]
+    Eigen::Matrix<double, 6, 6> J = Eigen::Matrix<double, 6, 6>::Zero();
+    
+    // Top-left block: rotation affects the translated position
+    J.block<3, 3>(0, 0) = R_source_to_target;
+    
+    // Top-right block: skew-symmetric matrix of translation affecting rotation part
+    Eigen::Matrix3d t_skew;
+    t_skew <<     0, -T_source_to_target(2, 3),  T_source_to_target(1, 3),
+               T_source_to_target(2, 3),     0, -T_source_to_target(0, 3),
+              -T_source_to_target(1, 3),  T_source_to_target(0, 3),     0;
+              
+    J.block<3, 3>(0, 3) = t_skew * R_source_to_target;
+    
+    // Bottom-right block: rotation affects the orientation covariance block
+    J.block<3, 3>(3, 3) = R_source_to_target;
+
+    // Error propagation: J * C_in * J^T
+    Eigen::Matrix<double, 6, 6> cov_out = J * cov_in * J.transpose();
+    return cov_out;
+}
+
+
 template <typename T>
 class ThreadSafeQueue {
     private:
