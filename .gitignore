@@ -2,6 +2,7 @@ compile_commands.json
 
 .venv/
 
+calibation_photos/*
 build/*
 include/*
 

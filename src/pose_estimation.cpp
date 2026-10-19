@@ -55,7 +55,7 @@ std::vector<VS::Points> VS::PoseEstimator::get_points(zarray_t *detections){ // 
     return out;
 }
 
-Eigen::Matrix<double, 6, 6> VS::PoseEstimator::get_cov_mat(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec) {
+Eigen::Matrix<double, 6, 6> VS::PoseEstimator::get_cov_mat(VS::Points actual_points, cv::Mat inliers, Eigen::Matrix<double, 6, 6> T_mat, cv::Mat rvec, cv::Mat tvec) {
     using Mat6 = Eigen::Matrix<double, 6, 6>;
 
     const Mat6 bad = Mat6::Identity() * 1e9;
@@ -98,6 +98,9 @@ Eigen::Matrix<double, 6, 6> VS::PoseEstimator::get_cov_mat(VS::Points actual_poi
     const double chi2 = r.squaredNorm() / Constants::pixel_sigma_sq / (2.0 * N - 6.0);
     cov *= std::max(1.0, chi2);                                  // inflate only
     cov /= std::max(double(N) / total, 0.25);                    // rejected points => less trust
+    
+    cov = VS::transformPoseCovariance(cov, T_mat*T_mat);
+
     return cov;
 }
 
@@ -138,7 +141,7 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
         pose.pose = VS::getTransform(rvec, tvec).inverse();
 
         // Get pose standard deviations
-        pose.uncertainty = get_cov_mat(points_in_ref_frame, inliers, rvec, tvec);
+        pose.uncertainty = get_cov_mat(points_in_ref_frame, inliers, pose.pose, rvec, tvec);
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 

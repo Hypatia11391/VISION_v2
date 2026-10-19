@@ -24,7 +24,7 @@ private:
     std::vector<VS::Points> get_points(zarray_t *detections);
 
     // Finds the uncertainty of the estimated pose. Outputs the 6 DOF standard deviations.
-    Eigen::Matrix<double, 6, 6> get_cov_mat(VS::Points actual_points, cv::Mat inliers, cv::Mat rvec, cv::Mat tvec);// Extra function, compute covariance.
+    Eigen::Matrix<double, 6, 6> get_cov_mat(VS::Points actual_points, cv::Mat inliers, Eigen::Matrix<double, 6, 6> T_mat, cv::Mat rvec, cv::Mat tvec);// Extra function, compute covariance.
 
     // Takes in a points object, and outputs a pose transform and covariance matrix
     VS::CameraPoseSet estimate_pose(std::vector<VS::Points> points);
