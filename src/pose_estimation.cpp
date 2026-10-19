@@ -118,12 +118,7 @@ void VS::PoseEstimator::run() {
     td->refine_edges = Constants::refine_edges;
 
     while (true) {
-        auto start = std::chrono::high_resolution_clock::now();
         frame_queue.pop(frame);
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        
-        std::cout << "Got image in: " << duration.count() << " ns\n";
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
@@ -134,27 +129,16 @@ void VS::PoseEstimator::run() {
             .buf = gray_frame.data
         };
 
-        start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         zarray_t *detections = apriltag_detector_detect(td, &im); // <------------- reference image?
-        end = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        
-        std::cout << "Got detections in: " << duration.count() << " ns\n";
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
         
         if (zarray_size(detections) > 0) {
-            start = std::chrono::high_resolution_clock::now();
-            points = get_points(detections);
-            end = std::chrono::high_resolution_clock::now();
-            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-            
-            std::cout << "Got image points in: " << duration.count() << " ns\n";
+            std::cout << "Got detections in: " << duration.count() << " ns\n";
 
-            start = std::chrono::high_resolution_clock::now();
+            points = get_points(detections);
             current_pose = estimate_pose(points);
-            end = std::chrono::high_resolution_clock::now();
-            duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-            
-            std::cout << "Got pose in: " << duration.count() << " ns\n";
             
             current_pose.timestamp = frame.timestamp;
 
@@ -163,7 +147,7 @@ void VS::PoseEstimator::run() {
             double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
 
             std::cout << "New pose from frame at timestamp: " << current_pose.timestamp << std::endl;
-            std::cout << "Processing time: " << current_ms - current_pose.timestamp << std::endl;
+            std::cout << "Processing time: " << current_ms - current_pose.timestamp << " ms" << std::endl;
             std::cout << current_pose.camera_poses[0].pose << std::endl;
 
             output_pose_queue.push(current_pose);

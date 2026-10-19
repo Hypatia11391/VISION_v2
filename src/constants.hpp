@@ -45,7 +45,7 @@ namespace Constants {
 
     inline constexpr double quad_decimate = 2.0;
     inline constexpr double quad_sigma = 0.0;
-    inline constexpr int nthreads = 2;
+    inline constexpr int nthreads = 1;
     inline constexpr int refine_edges = 1;
     
     inline constexpr int iterations = 100; // Number of iterations for the PnP algorithm to run
