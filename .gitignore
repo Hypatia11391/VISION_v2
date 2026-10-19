@@ -1,6 +1,7 @@
 compile_commands.json
 
 .venv/
+
 calibation_photos/.cap_venv
 build/*
 include/*
