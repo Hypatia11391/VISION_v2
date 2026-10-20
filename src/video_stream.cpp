@@ -81,13 +81,14 @@ void VS::VideoStream::video_stream() {
             auto t1 = clk::now();
             double grab_ms = ms(t1.time_since_epoch()) - ms(t0.time_since_epoch());
             std:: cout << "Grabbed frame in: " << grab_ms << "ms\n";
-            
+
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
             double now_mono_ms = std::chrono::duration<double, std::milli>(clk::now().time_since_epoch()).count();
             double age_ms = now_mono_ms - capture_time_monotomic;  // log this
             frame_ages.push_back(age_ms);
         }
         else {
+            auto t1 = clk::now();
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
             frame_count++;
             continue;
@@ -106,5 +107,9 @@ void VS::VideoStream::video_stream() {
             // Push to the compute thread
             output_queue.push(image);
         }
+
+        auto t2 = clk::now();
+        double loop_ms = ms(t2.time_since_epoch()) - ms(t0.time_since_epoch());
+        std::cout << "Loop ms: " << loop_ms << std::endl;
     }
 }
