@@ -38,14 +38,23 @@ void VS::VideoStream::video_stream() {
     cv::Mat current_frame;
     double capture_time_monotomic;
 
+    uint64_t last_diagnostic_frame = 0;
+    double fps_ms_counter_init = duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now().time_since_epoch()).count();
+
     // Continuous capture loop
     while (true) {
+        // FPS diagnostic
+        double fps_ms_counter_current = duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        double ms_since_last_sample = fps_ms_counter_current - fps_ms_counter_init;
+        if (ms_since_last_sample > 1000) {
+            fps_ms_counter_init = fps_ms_counter_current;
+            
+            double fps = (frame_count - last_diagnostic_frame)/ms_since_last_sample;
+            std::cout << "Currently running at " << fps << "fps" << std::endl;
+        }
 
         if (cap.grab()) {
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
-            double now_mono_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count();
-            double age_ms = now_mono_ms - capture_time_monotomic; 
-            std::cout << "Age of frame on grab: " << age_ms << "ms\n";
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
