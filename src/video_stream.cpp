@@ -21,9 +21,12 @@ void VS::VideoStream::video_stream() {
         return;
     }
 
+    using clk = std::chrono::steady_clock;
+    auto ms = [](auto d){ return std::chrono::duration<double, std::milli>(d).count(); };
+
     // Calc time offset between monotomic and systemclock
     auto rt1 = std::chrono::system_clock::now();
-    auto mono = std::chrono::steady_clock::now(); // Note: steady clock is the monotomic
+    auto mono = clk::now(); // Note: steady clock is the monotomic
     auto rt2 = std::chrono::system_clock::now();
     double rt1_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt1.time_since_epoch()).count();
     double rt2_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt2.time_since_epoch()).count();
@@ -52,13 +55,13 @@ void VS::VideoStream::video_stream() {
 
     // Diagnostics
     uint64_t last_diagnostic_frame = 0;
-    double fps_ms_counter_init = duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now().time_since_epoch()).count();
+    double fps_ms_counter_init = duration_cast<std::chrono::duration<double, std::milli>>(clk::now().time_since_epoch()).count();
     std::vector<double> frame_ages;
 
     // Continuous capture loop
     while (true) {
         // FPS diagnostic
-        double fps_ms_counter_current = duration_cast<std::chrono::duration<double, std::milli>>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        double fps_ms_counter_current = duration_cast<std::chrono::duration<double, std::milli>>(clk::now().time_since_epoch()).count();
         double ms_since_last_sample = fps_ms_counter_current - fps_ms_counter_init;
         if (ms_since_last_sample > 1000) {
             double fps = 1000*(frame_count - last_diagnostic_frame)/ms_since_last_sample;
@@ -73,9 +76,14 @@ void VS::VideoStream::video_stream() {
             last_diagnostic_frame = frame_count;
         }
 
+        auto t0 = clk::now();
         if (cap.grab()) {
+            auto t1 = clk::now();
+            double grab_ms = ms(t1.time_since_epoch()) - ms(t0.time_since_epoch());
+            std:: cout << "Grabbed frame in: " << grab_ms << "ms\n";
+            
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
-            double now_mono_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count();
+            double now_mono_ms = std::chrono::duration<double, std::milli>(clk::now().time_since_epoch()).count();
             double age_ms = now_mono_ms - capture_time_monotomic;  // log this
             frame_ages.push_back(age_ms);
         }
