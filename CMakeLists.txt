@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
-find_package(ntcore REQUIRED)
+#find_package(ntcore REQUIRED)
 
 add_executable(
     VisionSystem
@@ -37,7 +37,7 @@ target_compile_options(VisionSystem PRIVATE
 
 target_sources(VisionSystem PRIVATE)
 
-set(NATIVE "$ENV{VIRTUAL_ENV}/lib/python3.13/site-packages/native")
+#set(NATIVE "$ENV{VIRTUAL_ENV}/lib/python3.13/site-packages/native")
 
 target_include_directories(VisionSystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
