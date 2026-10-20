@@ -37,6 +37,15 @@ void VS::VideoStream::video_stream() {
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, Constants::cameras[cam_id].cam_res_height);
     cap.set(cv::CAP_PROP_FPS, Constants::cameras[cam_id].cam_FPS);
 
+    cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 1); 
+    double exposureValue = 50.0; 
+    bool success = cap.set(cv::CAP_PROP_EXPOSURE, exposureValue);
+    if (success) {
+        std::cout << "Exposure successfully set to: " << exposureValue << std::endl;
+    } else {
+        std::cerr << "Warning: Failed to set exposure. Property might not be supported by this camera/driver." << std::endl;
+    }
+
     uint64_t frame_count = 0;
     cv::Mat current_frame;
     double capture_time_monotomic;
