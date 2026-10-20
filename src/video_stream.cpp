@@ -88,24 +88,35 @@ void VS::VideoStream::video_stream() {
             frame_ages.push_back(age_ms);
         }
         else {
-            auto t1 = clk::now();
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
             frame_count++;
             continue;
         }
 
+        auto ret_t0 = clk::now();
         if (cap.retrieve(current_frame)) {
+            auto ret_t1 = clk::now();
+            double ret_ms = ms(ret_t1.time_since_epoch()) - ms(ret_t0.time_since_epoch());
+            std:: cout << "Retrieved frame in: " << ret_ms << "ms\n";
             frame_count++;
 
             // Package the data and metadata
             Image image;
+            auto clone_t0 = clk::now();
             image.frame = current_frame.clone();
+            auto clone_t1 = clk::now();
+            double clone_ms = ms(clone_t1.time_since_epoch()) - ms(clone_t0.time_since_epoch());
+            std:: cout << "cloned frame in: " << clone_ms << "ms\n";
             image.camera_id = cam_id;
             image.timestamp = capture_time_monotomic + offset;
             image.frame_sequence_number = frame_count;
 
             // Push to the compute thread
+            auto push_t0 = clk::now();
             output_queue.push(image);
+            auto push_t1 = clk::now();
+            double push_ms = ms(push_t1.time_since_epoch()) - ms(push_t0.time_since_epoch());
+            std:: cout << "pushed frame in: " << push_ms << "ms\n";
         }
 
         auto t2 = clk::now();
