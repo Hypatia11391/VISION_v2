@@ -123,7 +123,6 @@ void VS::PoseEstimator::run() {
         auto current_time_sys = std::chrono::system_clock::now();
         auto current_time = current_time_sys.time_since_epoch();
         double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
-        std::cout << "Got image in: " << current_ms - current_pose.timestamp << " ms" << std::endl;
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
@@ -140,6 +139,7 @@ void VS::PoseEstimator::run() {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         
         if (zarray_size(detections) > 0) {
+            std::cout << "Got image in: " << current_ms - current_pose.timestamp << " ms" << std::endl;
             std::cout << "Got detections in: " << duration.count() << " ms\n";
 
             points = get_points(detections);
