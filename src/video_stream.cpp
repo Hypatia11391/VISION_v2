@@ -41,7 +41,7 @@ void VS::VideoStream::video_stream() {
     double exposureValue = 50.0; 
     bool success = cap.set(cv::CAP_PROP_EXPOSURE, exposureValue);
     if (success) {
-        std::cout << "Exposure successfully set to: " << exposureValue << std::endl;
+        std::cout << "Exposure successfully set to: " << exposureValue/10 << "ms" << std::endl;
     } else {
         std::cerr << "Warning: Failed to set exposure. Property might not be supported by this camera/driver." << std::endl;
     }
