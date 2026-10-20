@@ -119,6 +119,13 @@ void VS::PoseEstimator::run() {
 
     while (true) {
         frame_queue.pop(frame);
+        auto current_time_sys = std::chrono::system_clock::now();
+        auto current_time = current_time_sys.time_since_epoch();
+        double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
+
+        //std::cout << "New pose from frame at timestamp: " << current_pose.timestamp << std::endl;
+        std::cout << "Got image in: " << current_ms - current_pose.timestamp << " ms" << std::endl;
+        std::cout << current_pose.camera_poses[0].pose << std::endl;
 
         cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
 
@@ -142,11 +149,10 @@ void VS::PoseEstimator::run() {
             
             current_pose.timestamp = frame.timestamp;
 
-            auto current_time_sys = std::chrono::system_clock::now();
-            auto current_time = current_time_sys.time_since_epoch();
-            double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
+            current_time_sys = std::chrono::system_clock::now();
+            current_time = current_time_sys.time_since_epoch();
+            current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
 
-            std::cout << "New pose from frame at timestamp: " << current_pose.timestamp << std::endl;
             std::cout << "Processing time: " << current_ms - current_pose.timestamp << " ms" << std::endl;
             std::cout << current_pose.camera_poses[0].pose << std::endl;
 
