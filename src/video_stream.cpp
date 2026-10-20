@@ -49,12 +49,15 @@ void VS::VideoStream::video_stream() {
         if (ms_since_last_sample > 1000) {
             fps_ms_counter_init = fps_ms_counter_current;
             
-            double fps = (frame_count - last_diagnostic_frame)/ms_since_last_sample;
+            double fps = 1000*(frame_count - last_diagnostic_frame)/ms_since_last_sample;
             std::cout << "Currently running at " << fps << "fps" << std::endl;
         }
 
         if (cap.grab()) {
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
+            double now_mono_ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count();
+            double age_ms = now_mono_ms - capture_time_monotomic;  // log this
+            std::cout << "Frame age: " << age_ms << "ms\n";
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
@@ -67,11 +70,7 @@ void VS::VideoStream::video_stream() {
 
             // Package the data and metadata
             Image image;
-            auto start = std::chrono::high_resolution_clock::now();
             image.frame = current_frame.clone();
-            auto end = std::chrono::high_resolution_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            std::cout << "Cloned image data in: " << duration.count() << " ms\n";
             image.camera_id = cam_id;
             image.timestamp = capture_time_monotomic + offset;
             image.frame_sequence_number = frame_count;
