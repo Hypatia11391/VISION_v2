@@ -17,9 +17,9 @@ find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 add_executable(
     VisionSystem
     src/main.cpp
-    src/network.cpp
+    #src/network.cpp
     src/pose_estimation.cpp
-    #src/video_stream.cpp
+    src/video_stream.cpp
 )
 
 target_link_libraries(VisionSystem PRIVATE 
