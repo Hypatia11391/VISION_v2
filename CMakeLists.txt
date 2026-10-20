@@ -12,12 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
-#find_package(ntcore REQUIRED)
+find_package(ntcore REQUIRED)
 
 add_executable(
     VisionSystem
     src/main.cpp
-#    src/network.cpp
+    src/network.cpp
     src/pose_estimation.cpp
     src/video_stream.cpp
 )
@@ -26,9 +26,9 @@ target_link_libraries(VisionSystem PRIVATE
     ${OpenCV_LIBS} 
     apriltag 
     Eigen3::Eigen
-#    ntcore
-#    wpinet
-#    wpiutil
+    ntcore
+    wpinet
+    wpiutil
 )
 
 target_compile_options(VisionSystem PRIVATE 
@@ -44,9 +44,9 @@ target_include_directories(VisionSystem PRIVATE
     "${NATIVE}/ntcore/include"
     "${NATIVE}/wpiutil/include"
     "${NATIVE}/wpinet/include"
-    #"${NATIVE}/wpimath/include"
-    #"${NATIVE}/wpilib/include"
-    #"${NATIVE}/wpihal/include"
+    "${NATIVE}/wpimath/include"
+    "${NATIVE}/wpilib/include"
+    "${NATIVE}/wpihal/include"
 )
 
 # Add Library Search Paths (-L)

@@ -139,13 +139,13 @@ void VS::PoseEstimator::run() {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         
         if (zarray_size(detections) > 0) {
-            std::cout << "Got image in: " << current_ms - current_pose.timestamp << " ms" << std::endl;
-            std::cout << "Got detections in: " << duration.count() << " ms\n";
-
             points = get_points(detections);
             current_pose = estimate_pose(points);
             
             current_pose.timestamp = frame.timestamp;
+            
+            std::cout << "Got image in: " << current_ms - current_pose.timestamp << " ms" << std::endl;
+            std::cout << "Got detections in: " << duration.count() << " ms\n";
 
             current_time_sys = std::chrono::system_clock::now();
             current_time = current_time_sys.time_since_epoch();
