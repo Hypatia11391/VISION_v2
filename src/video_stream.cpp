@@ -35,7 +35,8 @@ void VS::VideoStream::video_stream() {
     double offset = rt_mid_ms - mono_ms;
 
     // Hardware configurations.
-    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V')); // <------ try YUV2. That might be bad, or might work better.
+    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('G', 'R', 'E', 'Y')); // <------ try YUV2. That might be bad, or might work better.
+    cap.set(cv::CAP_PROP_CONVERT_RGB, 0);
     cap.set(cv::CAP_PROP_FRAME_WIDTH, Constants::cameras[cam_id].cam_res_width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, Constants::cameras[cam_id].cam_res_height);
     cap.set(cv::CAP_PROP_FPS, Constants::cameras[cam_id].cam_FPS);
