@@ -50,7 +50,12 @@ void VS::VideoStream::video_stream() {
         std::cerr << "Warning: Failed to set exposure. Property might not be supported by this camera/driver." << std::endl;
     }
 
-    std::cout << cv::getBuildInformation();
+    int f = (int)cap.get(cv::CAP_PROP_FOURCC);
+    std::cout << "fourcc: " << char(f & 255) << char((f >> 8) & 255 )
+            << char((f >> 16) & 255) << char((f >> 24) & 255)
+            << "  " << cap.get(cv::CAP_PROP_FRAME_WIDTH) << "x" << cap.get(cv::CAP_PROP_FRAME_HEIGHT)
+            << "  fps " << cap.get(cv::CAP_PROP_FPS) << std::endl;
+
 
     uint64_t frame_count = 0;
     cv::Mat current_frame;
