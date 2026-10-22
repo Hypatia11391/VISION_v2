@@ -88,7 +88,7 @@ void VS::VideoStream::video_stream() {
         if (cap.grab()) {
             auto t1 = clk::now();
             double grab_ms = ms(t1.time_since_epoch()) - ms(t0.time_since_epoch());
-            std:: cout << "Grabbed frame in: " << grab_ms << "ms\n";
+            //std:: cout << "Grabbed frame in: " << grab_ms << "ms\n";
 
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
             double now_mono_ms = std::chrono::duration<double, std::milli>(clk::now().time_since_epoch()).count();
@@ -105,7 +105,7 @@ void VS::VideoStream::video_stream() {
         if (cap.retrieve(current_frame)) {
             auto ret_t1 = clk::now();
             double ret_ms = ms(ret_t1.time_since_epoch()) - ms(ret_t0.time_since_epoch());
-            std:: cout << "Retrieved frame in: " << ret_ms << "ms\n";
+            //std:: cout << "Retrieved frame in: " << ret_ms << "ms\n";
             frame_count++;
 
             // Package frame data
@@ -128,6 +128,6 @@ void VS::VideoStream::video_stream() {
 
         auto t2 = clk::now();
         double loop_ms = ms(t2.time_since_epoch()) - ms(t0.time_since_epoch());
-        std::cout << "Loop ms: " << loop_ms << std::endl;
+        //std::cout << "Loop ms: " << loop_ms << std::endl;
     }
 }
