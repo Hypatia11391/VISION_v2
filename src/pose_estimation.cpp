@@ -102,7 +102,7 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
 
 void VS::PoseEstimator::run() {
     VS::Image frame;
-    cv::Mat gray_frame;
+    //cv::Mat gray_frame;
 
     VS::CameraPoseSet current_pose;
     std::vector<VS::Points> points;
@@ -124,7 +124,7 @@ void VS::PoseEstimator::run() {
         auto current_time = current_time_sys.time_since_epoch();
         double current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
 
-        cv::cvtColor(frame.frame, gray_frame, cv::COLOR_BGR2GRAY);
+        const cv::Mat& gray_frame = frame.frame;
 
         image_u8_t im{
             .width = gray_frame.cols,

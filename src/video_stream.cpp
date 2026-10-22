@@ -35,7 +35,7 @@ void VS::VideoStream::video_stream() {
     double offset = rt_mid_ms - mono_ms;
 
     // Hardware configurations.
-    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('G', 'R', 'E', 'Y')); // <------ try YUV2. That might be bad, or might work better.
+    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V')); // <------ try YUV2. That might be bad, or might work better.
     cap.set(cv::CAP_PROP_CONVERT_RGB, 0);
     cap.set(cv::CAP_PROP_FRAME_WIDTH, Constants::cameras[cam_id].cam_res_width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, Constants::cameras[cam_id].cam_res_height);
@@ -108,9 +108,17 @@ void VS::VideoStream::video_stream() {
             std:: cout << "Retrieved frame in: " << ret_ms << "ms\n";
             frame_count++;
 
-            // Package the data and metadata
+            // Package frame data
             Image image;
-            image.frame = current_frame.clone();
+            if (current_frame.channels() == 2) {
+                cv::extractChannel(current_frame, image.frame, 0);   // new 1-channel Mat, no clone needed
+            } else if (current_frame.channels() == 1) {
+                image.frame = current_frame.clone();
+            } else {
+                cv::cvtColor(current_frame, image.frame, cv::COLOR_BGR2GRAY);
+            }
+
+            // Package metadata
             image.camera_id = cam_id;
             image.timestamp = capture_time_monotomic + offset;
             image.frame_sequence_number = frame_count;
