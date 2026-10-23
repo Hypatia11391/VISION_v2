@@ -3,7 +3,6 @@
 #include <vector>
 #include <chrono>
 #include <thread>
-#include <ntcore/NetworkTableInstance.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/DoubleTopic.h>
 #include <networktables/DoubleArrayTopic.h>
