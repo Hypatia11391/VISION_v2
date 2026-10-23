@@ -5,6 +5,8 @@
 #include <thread>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
+#include <networktables/DoubleTopic.h>
+#include <networktables/DoubleArrayTopic.h>
 
 VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> input_queues) : pose_queues(input_queues) {}
 
