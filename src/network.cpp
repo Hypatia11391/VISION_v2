@@ -4,8 +4,7 @@
 #include <chrono>
 #include <thread>
 #include <networktables/NetworkTable.h>
-#include <networktables/DoubleTopic.h>
-#include <networktables/DoubleArrayTopic.h>
+#include <networktables/NetworkTableInstance.h>
 
 VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> input_queues) : pose_queues(input_queues) {}
 
