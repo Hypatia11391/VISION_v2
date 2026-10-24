@@ -8,6 +8,7 @@
 
 namespace Constants {
     inline constexpr double tag_size = 0.1651; // Tag side length in meters
+    inline constexpr double exposure_time = 50.0; // in 100s of microseconds
     
     // This is the number of reference frames to calculate the pose in.
     // Typically 1 global, + 1 for every important indipendant gamepice.
@@ -22,30 +23,30 @@ namespace Constants {
     }};
 
     inline const std::vector<VS::CameraInfo> cameras = {
-        // --- CAMERA 1 --- This is the camera with the purple lens clamp
+        // --- CAMERA 1 --- This is the camera with the black lens clamp
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
-            {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
-            cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
-                                    0.0         , 969.8771812, 519.93781744,
+            {-0.01998613, 0.01144283, -0.00374616, -0.00283593, -0.02289775}, // std::vector<double> distortion_constants
+            cv::Matx33d(1373.92138, 0.0        ,   775.841832,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
+                                    0.0         , 1378.46488,  644.592015,
                                     0.0         , 0.0        , 1.0          ),
-            "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
+            "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:1:1.0-video-index0"
         },
         
-        // --- CAMERA 2 --- This is the camera with the black lens clamp
+        // --- CAMERA 2 --- This is the camera with the purple lens clamp
         {
             1600, 1304, 60, // int cam_res_width, int cam_res_height, int cam_FPS
-            {0, 0, 0, 0, 0}, // std::vector<double> distortion_constants
-            cv::Matx33d(968.98165733, 0.0        , 683.85193417,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
-                                    0.0         , 969.8771812, 519.93781744,
-                                    0.0         , 0.0        , 1.0          ),
-            "/dev/v4l/by-path/platform-xhci-hcd.1-usb-0:1:1.0-video-index0" // <---------------------------------This may be wrong ------------------------- ToDo Double check device path
+            {-0.04425403, 0.25513404, 0.0129561, -0.00213634, -0.35521685}, // std::vector<double> distortion_constants
+            cv::Matx33d(1429.93305, 0.0        , 766.506697,// cv::Matx33d intrinsics <------------------------ PLACEHOLDERS
+                        0.0       , 1441.82627 , 693.603607,
+                        0.0       , 0.0        , 1.0          ),
+            "/dev/v4l/by-path/platform-xhci-hcd.1-usb-0:1:1.0-video-index0"
         }
     };
 
-    inline constexpr double quad_decimate = 2.0;
+    inline constexpr double quad_decimate = 3.0;
     inline constexpr double quad_sigma = 0.0;
-    inline constexpr int nthreads = 2;
+    inline constexpr int nthreads = 1;
     inline constexpr int refine_edges = 1;
     
     inline constexpr int iterations = 100; // Number of iterations for the PnP algorithm to run

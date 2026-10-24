@@ -1,6 +1,9 @@
 #include <opencv2/opencv.hpp>
 
 #include <iostream>
+#include <opencv2/videoio.hpp>
+#include <vector>
+#include <numeric>
 #include "utils.hpp"
 
 #include "constants.hpp"
@@ -18,9 +21,12 @@ void VS::VideoStream::video_stream() {
         return;
     }
 
+    using clk = std::chrono::steady_clock;
+    auto ms = [](auto d){ return std::chrono::duration<double, std::milli>(d).count(); };
+
     // Calc time offset between monotomic and systemclock
     auto rt1 = std::chrono::system_clock::now();
-    auto mono = std::chrono::steady_clock::now(); // Note: steady clock is the monotomic
+    auto mono = clk::now(); // Note: steady clock is the monotomic
     auto rt2 = std::chrono::system_clock::now();
     double rt1_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt1.time_since_epoch()).count();
     double rt2_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt2.time_since_epoch()).count();
@@ -29,38 +35,99 @@ void VS::VideoStream::video_stream() {
     double offset = rt_mid_ms - mono_ms;
 
     // Hardware configurations.
-    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G')); // <------ try YUV2. That might be bad, or might work better.
+    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V')); // <------ try YUV2. That might be bad, or might work better.
+    cap.set(cv::CAP_PROP_CONVERT_RGB, 0);
     cap.set(cv::CAP_PROP_FRAME_WIDTH, Constants::cameras[cam_id].cam_res_width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, Constants::cameras[cam_id].cam_res_height);
     cap.set(cv::CAP_PROP_FPS, Constants::cameras[cam_id].cam_FPS);
+
+    cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 1); 
+    double exposureValue = Constants::exposure_time; 
+    bool success = cap.set(cv::CAP_PROP_EXPOSURE, exposureValue);
+    if (success) {
+        std::cout << "Exposure successfully set to: " << exposureValue/10 << "ms" << std::endl;
+    } else {
+        std::cerr << "Warning: Failed to set exposure. Property might not be supported by this camera/driver." << std::endl;
+    }
+
+    int f = (int)cap.get(cv::CAP_PROP_FOURCC);
+    std::cout << "fourcc: " << char(f & 255) << char((f >> 8) & 255 )
+            << char((f >> 16) & 255) << char((f >> 24) & 255)
+            << "  " << cap.get(cv::CAP_PROP_FRAME_WIDTH) << "x" << cap.get(cv::CAP_PROP_FRAME_HEIGHT)
+            << "  fps " << cap.get(cv::CAP_PROP_FPS) << std::endl;
+
 
     uint64_t frame_count = 0;
     cv::Mat current_frame;
     double capture_time_monotomic;
 
+    // Diagnostics
+    uint64_t last_diagnostic_frame = 0;
+    double fps_ms_counter_init = duration_cast<std::chrono::duration<double, std::milli>>(clk::now().time_since_epoch()).count();
+    std::vector<double> frame_ages;
+
     // Continuous capture loop
     while (true) {
+        // FPS diagnostic
+        double fps_ms_counter_current = duration_cast<std::chrono::duration<double, std::milli>>(clk::now().time_since_epoch()).count();
+        double ms_since_last_sample = fps_ms_counter_current - fps_ms_counter_init;
+        if (ms_since_last_sample > 1000) {
+            double fps = 1000*(frame_count - last_diagnostic_frame)/ms_since_last_sample;
+            std::cout << "Currently running at " << fps << "fps" << std::endl;
 
+            if (!frame_ages.empty()) {
+                double avg_frame_age = std::accumulate(frame_ages.begin(), frame_ages.end(), 0.0)/frame_ages.size();
+                std::cout << "Avg frame age: " << avg_frame_age << "ms\n";
+            }
+
+            fps_ms_counter_init = fps_ms_counter_current;
+            last_diagnostic_frame = frame_count;
+        }
+
+        auto t0 = clk::now();
         if (cap.grab()) {
+            auto t1 = clk::now();
+            double grab_ms = ms(t1.time_since_epoch()) - ms(t0.time_since_epoch());
+            //std:: cout << "Grabbed frame in: " << grab_ms << "ms\n";
+
             capture_time_monotomic = cap.get(cv::CAP_PROP_POS_MSEC);
+            double now_mono_ms = std::chrono::duration<double, std::milli>(clk::now().time_since_epoch()).count();
+            double age_ms = now_mono_ms - capture_time_monotomic;  // log this
+            frame_ages.push_back(age_ms);
         }
         else {
             std::cerr << "Warning: Dropped frame number " << frame_count << " on camera " << cam_id << std::endl;
+            frame_count++;
             continue;
         }
 
+        auto ret_t0 = clk::now();
         if (cap.retrieve(current_frame)) {
+            auto ret_t1 = clk::now();
+            double ret_ms = ms(ret_t1.time_since_epoch()) - ms(ret_t0.time_since_epoch());
+            //std:: cout << "Retrieved frame in: " << ret_ms << "ms\n";
             frame_count++;
 
-            // Package the data and metadata
+            // Package frame data
             Image image;
-            image.frame = current_frame.clone();
+            if (current_frame.channels() == 2) {
+                cv::extractChannel(current_frame, image.frame, 0);   // new 1-channel Mat, no clone needed
+            } else if (current_frame.channels() == 1) {
+                image.frame = current_frame.clone();
+            } else {
+                cv::cvtColor(current_frame, image.frame, cv::COLOR_BGR2GRAY);
+            }
+
+            // Package metadata
             image.camera_id = cam_id;
             image.timestamp = capture_time_monotomic + offset;
             image.frame_sequence_number = frame_count;
 
-            // Push to the compute thread
             output_queue.push(image);
         }
+
+        auto t2 = clk::now();
+        double loop_ms = ms(t2.time_since_epoch()) - ms(t0.time_since_epoch());
+        //std::cout << "Loop ms: " << loop_ms << std::endl;
     }
 }

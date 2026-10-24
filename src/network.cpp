@@ -3,8 +3,8 @@
 #include <vector>
 #include <chrono>
 #include <thread>
-#include <networktables/NetworkTableInstance.h>
 #include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
 #include <networktables/DoubleTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 

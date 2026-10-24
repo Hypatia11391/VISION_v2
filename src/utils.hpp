@@ -118,7 +118,7 @@ class ThreadSafeQueue {
 
     public:
         // Set a small max_size to prevent the queue from growing infinitely if computation falls behind capture.
-        ThreadSafeQueue(size_t max_size = 2) : max_size_(max_size) {}
+        ThreadSafeQueue(size_t max_size = 1) : max_size_(max_size) {}
 
         // Called by the producer thread
         void push(T item) {
