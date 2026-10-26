@@ -89,7 +89,7 @@ VS::CameraPoseSet VS::PoseEstimator::estimate_pose(std::vector<VS::Points> point
         }
 
         // Convert output Rodrigues and tvec to 4x4 transform matrix
-        pose.pose = VS::getTransform(rvec, tvec).inverse();
+        pose.pose = VS::getTransform(rvec, tvec);//.inverse();
 
         pose.apriltag_set_number = points_in_ref_frame.set_id;
 
