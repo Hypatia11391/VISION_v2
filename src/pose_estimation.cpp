@@ -38,7 +38,7 @@ std::vector<VS::Points> VS::PoseEstimator::get_points(zarray_t *detections){ // 
             // Check if the detection is in the set
             if (std::binary_search(Constants::apriltag_ids_for_each_frame[set_id].begin(), Constants::apriltag_ids_for_each_frame[set_id].end(), det->id)) {
                 for (int corner = 0; corner < 4; corner ++) { // <----------------------------- Possible optimizations: Memory alocation of vector, and pose inversion to custom closed form function, or transpositiona rather than inversion.
-                    Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1].inverse() * obj_point_choices[corner];
+                    Eigen::Vector4d obj_point_eigen = Constants::apriltag_poses_in_global[det->id - 1]/*.inverse()*/ * obj_point_choices[corner];
                     
                     cv::Point3d obj_point = {obj_point_eigen[0], obj_point_eigen[1], obj_point_eigen[2]};
                     cv::Point2d im_point = {det->p[corner][0], det->p[corner][1]};
