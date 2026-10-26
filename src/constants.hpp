@@ -8,7 +8,7 @@
 
 namespace Constants {
     inline constexpr double tag_size = 0.1651; // Tag side length in meters
-    inline constexpr double exposure_time = 50.0; // in 100s of microseconds
+    inline constexpr double exposure_time = 20.0; // in 100s of microseconds (or .1 ms)
     
     // This is the number of reference frames to calculate the pose in.
     // Typically 1 global, + 1 for every important indipendant gamepice.
