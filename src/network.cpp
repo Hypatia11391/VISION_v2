@@ -1,4 +1,5 @@
 #include "network.hpp"
+#include "constants.hpp"
 #include "utils.hpp"
 #include <vector>
 #include <chrono>
@@ -13,10 +14,11 @@ VS::Network::Network(std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> input_
 void VS::Network::run() {
     auto nt = nt::NetworkTableInstance::GetDefault();
     nt.StartClient4("RaspberryPiVision");
+    nt.SetServerTeam(11391);
     //nt.SetServer("192.168.0.44", 5810); // <----------------- May not be needed
 
     auto table = nt.GetTable("Vision");
-    auto pose_pub = table->GetDoubleArrayTopic("pose").Publish();
+    auto pose_pub = table->GetDoubleArrayTopic("pose").Publish({.periodic = Constants::net_table_update_speed/1000});
     
     int num_cams = pose_queues.size();
     std::vector<VS::CameraPoseSet> poses;
