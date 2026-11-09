@@ -73,12 +73,12 @@ void VS::VideoStream::video_stream() {
         double ms_since_last_sample = fps_ms_counter_current - fps_ms_counter_init;
         if (ms_since_last_sample > 1000) {
             double fps = 1000*(frame_count - last_diagnostic_frame)/ms_since_last_sample;
-            std::cout << "Currently running at " << fps << "fps" << std::endl;
+            //std::cout << "Currently running at " << fps << "fps" << std::endl;
 
-            if (!frame_ages.empty()) {
-                double avg_frame_age = std::accumulate(frame_ages.begin(), frame_ages.end(), 0.0)/frame_ages.size();
-                std::cout << "Avg frame age: " << avg_frame_age << "ms\n";
-            }
+            //if (!frame_ages.empty()) {
+            //    double avg_frame_age = std::accumulate(frame_ages.begin(), frame_ages.end(), 0.0)/frame_ages.size();
+            //    std::cout << "Avg frame age: " << avg_frame_age << "ms\n";
+            //}
 
             fps_ms_counter_init = fps_ms_counter_current;
             last_diagnostic_frame = frame_count;

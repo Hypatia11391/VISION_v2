@@ -15,10 +15,10 @@ void VS::Network::run() {
     auto nt = nt::NetworkTableInstance::GetDefault();
     nt.StartClient4("RaspberryPiVision");
     nt.SetServerTeam(11391);
-    //nt.SetServer("192.168.0.44", 5810); // <----------------- May not be needed
+    nt.SetServer("10.113.91.2", 5810);
 
-    auto table = nt.GetTable("Vision");
-    auto pose_pub = table->GetDoubleArrayTopic("pose").Publish({.periodic = Constants::net_table_update_speed/1000});
+    auto table = nt.GetTable("datatable");
+    auto pose_pub = table->GetDoubleArrayTopic("robot_pose").Publish({.periodic = Constants::net_table_update_speed});
     
     int num_cams = pose_queues.size();
     std::vector<VS::CameraPoseSet> poses;
@@ -36,8 +36,14 @@ void VS::Network::run() {
                 
                 VS::CameraPose camera_pose = poses[i].camera_poses[j];
                 pose_vector.push_back(static_cast<double>(camera_pose.apriltag_set_number));
-                pose_vector.insert(pose_vector.end(), camera_pose.pose.data(), camera_pose.pose.data()+camera_pose.pose.size());
-                pose_vector.insert(pose_vector.end(), camera_pose.uncertainty.data(), camera_pose.uncertainty.data()+camera_pose.uncertainty.size());
+                pose_vector.insert(pose_vector.end(), camera_pose.pose.data(), camera_pose.pose.data() + camera_pose.pose.size());
+                pose_vector.insert(pose_vector.end(), camera_pose.uncertainty.data(), camera_pose.uncertainty.data() + camera_pose.uncertainty.size());
+
+		std::cout << "Vals" << std::endl;
+
+		for (const auto& val : pose_vector) {
+			std::cout << val << std::endl;
+		}
 
                 pose_pub.Set(pose_vector);
             }
