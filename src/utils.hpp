@@ -108,14 +108,22 @@ class ThreadSafeQueue {
 
         // Called by the consumer thread)
         void pop(T& item) {
+            std::cout << "Entering pop, empty = " << queue_.empty() << std::endl;
+
             // std::unique_lock is required for condition variables.
             std::unique_lock<std::mutex> lock(mutex_);
+
+            std::cout << "Created Lock" << std::endl;
             
             // This puts the thread to sleep until the queue is not empty. It safely releases the mutex while sleeping, and reacquires it upon waking.
             cond_var_.wait(lock, [this]() { return !queue_.empty(); });
             
+	    std::cout << "Waited" << std::endl;
+
             item = std::move(queue_.front());
             queue_.pop();
+
+            std::cout << "Popped" << std::endl;
             
             // The lock is automatically released when this function ends.
         }
