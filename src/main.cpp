@@ -10,11 +10,11 @@
 int main () {
     // Set up queues for camera 0
     VS::ThreadSafeQueue<VS::Image> image_queue_0;
-    VS::ThreadSafeQueue<VS::CameraPoseSet> pose_queue_0;
+    VS::ThreadSafeQueue<VS::CameraPoseSet> output_pose_queue;
 
     // Set up video streaming and pose estimator classes for camera 0
     VS::VideoStream stream_0{0, image_queue_0}; // <------------------------- ToDo, check device path
-    VS::PoseEstimator estimator_0{0, image_queue_0, pose_queue_0};
+    VS::PoseEstimator estimator_0{0, image_queue_0, output_pose_queue};
 
     // Start stream and pose estimnaton threads for camera 0
     std::cout << "[INFO] Starting video stream 0 thread" << std::endl;
@@ -24,11 +24,11 @@ int main () {
 
     // Set up queues for camera 1
     VS::ThreadSafeQueue<VS::Image> image_queue_1;
-    VS::ThreadSafeQueue<VS::CameraPoseSet> pose_queue_1;
+    //VS::ThreadSafeQueue<VS::CameraPoseSet> pose_queue_1;
 
     // Set up video streaming and pose estimator classes for camera 1
     VS::VideoStream stream_1{1, image_queue_1}; // <------------------------- ToDo, check device path
-    VS::PoseEstimator estimator_1{1, image_queue_1, pose_queue_1};
+    VS::PoseEstimator estimator_1{1, image_queue_1, output_pose_queue};
 
     // Start stream and pose estimnaton threads for camera 1
     std::cout << "[INFO] Starting video stream 1 thread" << std::endl;
@@ -37,13 +37,13 @@ int main () {
     std::thread t_estimator_1(&VS::PoseEstimator::run, &estimator_1);
 
     // Create networking thread.
-    std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> pose_queues;
-    pose_queues.push_back(&pose_queue_0);
-    pose_queues.push_back(&pose_queue_1);
+    //std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> pose_queues;
+    //pose_queues.push_back(&pose_queue_0);
+    //pose_queues.push_back(&pose_queue_1);
     
-    VS::Network network_obj(pose_queues);
+    VS::Network network_obj(&output_pose_queue);
     std::cout << "[INFO] Starting networking thread" << std::endl;
-    std::thread t_network(&VS::Network::run, network_obj);
+    std::thread t_network(&VS::Network::run, &network_obj);
 
     // Make sure to wait for threads to finish
     t_stream_0.join();

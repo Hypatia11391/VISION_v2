@@ -79,7 +79,7 @@ inline Eigen::Matrix4d getTransform(const cv::Mat rvec, const cv::Mat tvec) {
 }
 
 template <typename T>
-class ThreadSafeQueue {
+class ThreadSafeQueue { // <---------------------------------- This function was AI generated. Seems to work however.
     private:
         std::queue<T> queue_;
         std::mutex mutex_;
@@ -92,7 +92,7 @@ class ThreadSafeQueue {
 
         // Called by the producer thread
         void push(T item) {
-            // std::lock_guard automatically locks the mutex, and unlocks it when this function finishes. Never manually lock/unlock!
+            // std::lock_guard automatically locks the mutex, and unlocks it when this function finishes.
             std::lock_guard<std::mutex> lock(mutex_);
             
             // Drop the oldest frame if falling behind.

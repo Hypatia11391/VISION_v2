@@ -6,9 +6,9 @@
 namespace VS {
 class Network {
 private:
-    std::vector<VS::ThreadSafeQueue<CameraPoseSet>*> pose_queues;
+    VS::ThreadSafeQueue<CameraPoseSet>* pose_queue;
 public:
-    Network(std::vector<VS::ThreadSafeQueue<CameraPoseSet>*> input_queues);
+    Network(VS::ThreadSafeQueue<CameraPoseSet>* pose_queue);
 
     void run();
 };
