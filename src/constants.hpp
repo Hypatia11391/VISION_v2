@@ -55,5 +55,5 @@ namespace Constants {
 
     inline constexpr double pixel_sigma_sq = 1.0; // The estimated squared standard deviation in image point [pixels] accuracy
 
-    inline constexpr double net_table_update_speed = 30; // ms
+    inline constexpr double net_table_update_speed = 10; // ms
 }
