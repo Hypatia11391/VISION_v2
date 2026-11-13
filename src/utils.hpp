@@ -5,6 +5,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <format>
 #include <networktables/NetworkTableInstance.h>
 
 #include "Eigen/Dense"
@@ -47,8 +48,10 @@ struct CameraPoseSet {
 };
 
 inline int64_t get_synced_time_ms(nt::NetworkTableInstance inst) {
+    std::cout << std::format("{}, {}", nt::Now(), inst.GetServerTimeOffset().value_or(0)) << std::endl;
     double micro_s = static_cast<double>(nt::Now() + inst.GetServerTimeOffset().value_or(0));
     double ms = micro_s/1000;
+    std::cout << ms << std::endl;
 
     return ms;
 }

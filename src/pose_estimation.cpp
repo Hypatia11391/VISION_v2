@@ -150,7 +150,7 @@ void VS::PoseEstimator::run() {
             current_time_sys = std::chrono::system_clock::now();
             current_time = current_time_sys.time_since_epoch();
             current_ms = std::chrono::duration_cast<std::chrono::milliseconds>(current_time).count();
-//            std::cout << "Processing time: " << current_ms - current_pose.timestamp << " ms" << std::endl;
+            std::cout << "Processing time: " << current_ms - current_pose.timestamp << " ms" << std::endl;
             if (!current_pose.camera_poses.empty()) {
                 std::cout << current_pose.camera_poses[0].pose << "\n\n";
 //                std::cout << "Trying to push to pose queue: " << std::endl;

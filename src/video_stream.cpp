@@ -29,8 +29,11 @@ void VS::VideoStream::video_stream() {
     auto mono = clk::now(); // Note: steady clock is the monotomic
     double t2 = VS::get_synced_time_ms(nt_inst);
 
+    //std::cout << "t2 = " << t2 << std::endl;
+
     double mono_ms = duration_cast<std::chrono::duration<double, std::milli>>(mono.time_since_epoch()).count();
     double t_mid_ms = (t1 + t2) / 2.0;
+    //std::cout << t_mid_ms << std::endl;
     double offset = t_mid_ms - mono_ms;
 
     // Hardware configurations.
@@ -120,6 +123,7 @@ void VS::VideoStream::video_stream() {
             // Package metadata
             image.camera_id = cam_id;
             image.timestamp = capture_time_monotomic + offset;
+	    //std::cout << "timestamp = " << image.timestamp << std::endl;
             image.frame_sequence_number = frame_count;
 
             output_queue.push(image);
