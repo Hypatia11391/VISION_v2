@@ -5,6 +5,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <networktables/NetworkTableInstance.h>
 
 #include "Eigen/Dense"
 #include <opencv2/opencv.hpp>
@@ -44,6 +45,13 @@ struct CameraPoseSet {
     std::vector<CameraPose> camera_poses;
     double timestamp;
 };
+
+inline int64_t get_synced_time_ms(nt::NetworkTableInstance inst) {
+    double micro_s = static_cast<double>(nt::Now() + inst.GetServerTimeOffset().value_or(0));
+    double ms = micro_s/1000;
+
+    return ms;
+}
 
 inline Eigen::MatrixXd jacobianPsuedoInverse(const Eigen::MatrixXd &J, double lambda = 0.001) { // <--------- This is AI generated. Use at your own risk.
     int rows = J.rows(); // <------------ syntax error: J is pointer?

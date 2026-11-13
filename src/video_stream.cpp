@@ -9,8 +9,8 @@
 #include "constants.hpp"
 #include "video_stream.hpp"
 
-VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue)
-    : cam_id(id), output_queue(queue) {}
+VS::VideoStream::VideoStream(int id, VS::ThreadSafeQueue<Image>& queue, nt::NetworkTableInstance& table_inst)
+    : cam_id(id), output_queue(queue), nt_inst(table_inst) {}
 
 void VS::VideoStream::video_stream() {
     // Initialize camera using the persistent V4L2 path
@@ -25,14 +25,13 @@ void VS::VideoStream::video_stream() {
     auto ms = [](auto d){ return std::chrono::duration<double, std::milli>(d).count(); };
 
     // Calc time offset between monotomic and systemclock
-    auto rt1 = std::chrono::system_clock::now();
+    double t1 = VS::get_synced_time_ms(nt_inst);
     auto mono = clk::now(); // Note: steady clock is the monotomic
-    auto rt2 = std::chrono::system_clock::now();
-    double rt1_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt1.time_since_epoch()).count();
-    double rt2_ms = duration_cast<std::chrono::duration<double, std::milli>>(rt2.time_since_epoch()).count();
+    double t2 = VS::get_synced_time_ms(nt_inst);
+
     double mono_ms = duration_cast<std::chrono::duration<double, std::milli>>(mono.time_since_epoch()).count();
-    double rt_mid_ms = (rt1_ms + rt2_ms) / 2.0;
-    double offset = rt_mid_ms - mono_ms;
+    double t_mid_ms = (t1 + t2) / 2.0;
+    double offset = t_mid_ms - mono_ms;
 
     // Hardware configurations.
     cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('Y', 'U', 'Y', 'V')); // <------ try YUV2. That might be bad, or might work better.

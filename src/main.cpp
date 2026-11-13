@@ -8,6 +8,12 @@
 #include "pose_estimation.hpp"
 
 int main () {
+    // Create networking table.
+    auto nt_inst = nt::NetworkTableInstance::GetDefault();
+    nt_inst.StartClient4("RaspberryPiVision");
+    nt_inst.SetServerTeam(11391);
+    nt_inst.SetServer("10.113.91.2", 5810);
+
     // Set up queues for camera 0
     VS::ThreadSafeQueue<VS::Image> image_queue_0;
     VS::ThreadSafeQueue<VS::CameraPoseSet> output_pose_queue;
@@ -35,13 +41,8 @@ int main () {
     std::thread t_stream_1(&VS::VideoStream::video_stream, &stream_1);
     std::cout << "[INFO] Starting pose estimator 1 thread" << std::endl;
     std::thread t_estimator_1(&VS::PoseEstimator::run, &estimator_1);
-
-    // Create networking thread.
-    //std::vector<VS::ThreadSafeQueue<VS::CameraPoseSet>*> pose_queues;
-    //pose_queues.push_back(&pose_queue_0);
-    //pose_queues.push_back(&pose_queue_1);
     
-    VS::Network network_obj(&output_pose_queue);
+    VS::Network network_obj(&output_pose_queue, nt_inst);
     std::cout << "[INFO] Starting networking thread" << std::endl;
     std::thread t_network(&VS::Network::run, &network_obj);
 

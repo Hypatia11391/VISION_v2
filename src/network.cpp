@@ -9,18 +9,13 @@
 #include <networktables/DoubleTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 
-VS::Network::Network(VS::ThreadSafeQueue<VS::CameraPoseSet>* input_queue) : pose_queue(input_queue) {}
+VS::Network::Network(VS::ThreadSafeQueue<VS::CameraPoseSet>* input_queue, nt::NetworkTableInstance& table_inst) : pose_queue(input_queue), nt_inst(table_inst) {}
 
 void VS::Network::run() {
-    auto nt = nt::NetworkTableInstance::GetDefault();
-    nt.StartClient4("RaspberryPiVision");
-    nt.SetServerTeam(11391);
-    nt.SetServer("10.113.91.2", 5810);
-
-    auto table = nt.GetTable("datatable");
-    auto pose_pub = table->GetDoubleArrayTopic("robot_pose").Publish({.periodic = Constants::net_table_update_speed/1000});
-
     VS::CameraPoseSet poses;
+
+    auto table = nt_inst.GetTable("datatable");
+    auto pose_pub = table->GetDoubleArrayTopic("robot_pose").Publish({.periodic = Constants::net_table_update_speed/1000});
 
     while (true) {
         //std::cout << "Trying to pop pose" << std::endl;
